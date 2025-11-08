@@ -1,10 +1,10 @@
 html {
-  font-size: 14px;
+  font-size: 13px;
 }
 
 @media (min-width: 768px) {
   html {
-    font-size: 16px;
+    font-size: 12px;
   }
 }
 
@@ -12,13 +12,46 @@ html {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
-html {
-  position: relative;
-  min-height: 100%;
+html, body {
+  height: 100%;
 }
 
 body {
-  margin-bottom: 60px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+body > .container {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+footer.footer {
+  flex-shrink: 0;
+  background-color: #0b2440;
+  text-align: center;
+  padding: 0.2rem;
+}
+
+footer.footer .container {
+  display: block; /* keep default flow, text-align handles centering */
+  text-align: center;
+  color: #f3f4f6;
+}
+
+footer.footer a {
+  color: #f3f4f6;
+  text-decoration: underline;
+}
+
+footer.footer a:hover,
+footer.footer a:focus {
+  color: #ffffff;
+  text-decoration: none;
+  opacity: 0.95;
 }
 
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
@@ -28,4 +61,16 @@ body {
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
+}
+
+.page-title {
+  text-align: left;
+  font-size: 1.05rem; /* slightly smaller to match reduced base */
+  font-weight: 600;
+  margin: 0 0 0.65rem 0;
+  color: #0b2440;
+}
+
+@media (max-width: 576px) {
+  .page-title { font-size: 1rem; }
 }

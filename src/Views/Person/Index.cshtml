@@ -1,0 +1,50 @@
+﻿@{
+    ViewData["Title"] = "Pessoas";
+}
+
+<p class="text-muted">Página para gerenciar pessoas do cursinho (Professores, Alunos e Responsáveis).</p>
+
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <div>
+        <a asp-action="Create" class="btn btn-sm btn-primary" role="button" title="Adicionar">
+            <span aria-hidden="true" class="me-1">+</span>
+        </a>
+    </div>
+</div>
+
+<table class="table table-sm table-hover">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Papel</th>
+            <th class="text-end">Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        @* Example rows. Replace with model iteration when available. *@
+        <tr>
+            <td>João Silva</td>
+            <td>Aluno</td>
+            <td class="text-end">
+                <button class="btn btn-sm btn-outline-secondary me-1" title="Visualizar" aria-label="Visualizar">
+                    <span aria-hidden="true">🔍</span>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" title="Remover" aria-label="Remover">
+                    <span aria-hidden="true">✖</span>
+                </button>
+            </td>
+        </tr>
+        <tr>
+            <td>Maria Oliveira</td>
+            <td>Professora</td>
+            <td class="text-end">
+                <button class="btn btn-sm btn-outline-secondary me-1" title="Visualizar" aria-label="Visualizar">
+                    <span aria-hidden="true">🔍</span>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" title="Remover" aria-label="Remover">
+                    <span aria-hidden="true">✖</span>
+                </button>
+            </td>
+        </tr>
+    </tbody>
+</table>
