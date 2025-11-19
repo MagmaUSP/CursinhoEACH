@@ -1,48 +1,88 @@
 ﻿@{
     ViewData["Title"] = "Pessoas";
+    var q = Context.Request.Query;
+    string qCpf = q["cpf"].ToString();
+    string qNome = q["nome"].ToString();
+    string qEmail = q["email"].ToString();
+    string qPapel = q["papel"].ToString();
 }
 
 <p class="text-muted">Página para gerenciar pessoas do cursinho (Professores, Alunos e Responsáveis).</p>
 
-<div class="d-flex justify-content-between align-items-center mb-2">
-    <div>
-        <a asp-action="Create" class="btn btn-sm btn-primary" role="button" title="Adicionar">
-            <span aria-hidden="true" class="me-1">+</span>
-        </a>
+<form method="get" class="mb-2" autocomplete="off">
+    <div class="row g-2 align-items-end">
+        <div class="col-12 col-md-3">
+            <label for="cpf" class="form-label">CPF</label>
+            <input type="text" class="form-control cpf-mask" id="cpf" name="cpf" inputmode="numeric" autocomplete="off" maxlength="14" value="@qCpf" />
+        </div>
+        <div class="col-12 col-md-3">
+            <label for="nome" class="form-label">Nome</label>
+            <input type="text" class="form-control" id="nome" name="nome" autocomplete="off" maxlength="100" value="@qNome" />
+        </div>
+        <div class="col-12 col-md-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="text" class="form-control" id="email" name="email" autocomplete="off" maxlength="100" value="@qEmail" />
+        </div>
+        <div class="col-12 col-md-3">
+            <label for="papel" class="form-label">Papel</label>
+            <select class="form-select" id="papel" name="papel">
+                @if (string.IsNullOrEmpty(qPapel)) {<option value="" selected>Todos</option>} else {<option value="">Todos</option>}
+                @if (qPapel == "Aluno") {<option value="Aluno" selected>Aluno</option>} else {<option value="Aluno">Aluno</option>}
+                @if (qPapel == "Professor") {<option value="Professor" selected>Professor</option>} else {<option value="Professor">Professor</option>}
+                @if (qPapel == "Responsável") {<option value="Responsável" selected>Responsável</option>} else {<option value="Responsável">Responsável</option>}
+            </select>
+        </div>
     </div>
+    <div class="row mt-2">
+        <div class="col-12 d-flex gap-2 justify-content-end">
+            <button type="submit" class="btn text-white btn-brand btn-no-focus">Filtrar</button>
+            <a asp-action="Index" class="btn btn-outline-secondary btn-no-focus">Limpar</a>
+        </div>
+    </div>
+</form>
+
+<hr class="my-3" />
+
+<div class="d-flex justify-content-end align-items-center mb-2">
+    <a asp-action="Create" class="btn text-white btn-add-person btn-no-focus" role="button" title="Adicionar pessoa">
+        Adicionar pessoa
+    </a>
+    
 </div>
 
-<table class="table table-sm table-hover">
+<table class="table table-hover align-middle">
     <thead>
         <tr>
             <th>Nome</th>
+            <th>Email</th>
             <th>Papel</th>
             <th class="text-end">Ações</th>
         </tr>
     </thead>
     <tbody>
-        @* Example rows. Replace with model iteration when available. *@
         <tr>
             <td>João Silva</td>
+            <td>joao.silva@exemplo.com</td>
             <td>Aluno</td>
             <td class="text-end">
-                <button class="btn btn-sm btn-outline-secondary me-1" title="Visualizar" aria-label="Visualizar">
-                    <span aria-hidden="true">🔍</span>
-                </button>
-                <button class="btn btn-sm btn-outline-danger" title="Remover" aria-label="Remover">
-                    <span aria-hidden="true">✖</span>
+                <a href="/Person/1" class="btn btn-secondary text-white btn-icon-square btn-no-focus rounded me-1" title="Visualizar" aria-label="Visualizar">
+                    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
+                </a>
+                <button class="btn btn-danger text-white btn-icon-square btn-no-focus rounded" title="Remover" aria-label="Remover">
+                    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg>
                 </button>
             </td>
         </tr>
         <tr>
             <td>Maria Oliveira</td>
-            <td>Professora</td>
+            <td>maria.oliveira@exemplo.com</td>
+            <td>Professor</td>
             <td class="text-end">
-                <button class="btn btn-sm btn-outline-secondary me-1" title="Visualizar" aria-label="Visualizar">
-                    <span aria-hidden="true">🔍</span>
-                </button>
-                <button class="btn btn-sm btn-outline-danger" title="Remover" aria-label="Remover">
-                    <span aria-hidden="true">✖</span>
+                <a href="/Person/2" class="btn btn-sm btn-secondary text-white btn-icon-square btn-no-focus rounded me-1" title="Visualizar" aria-label="Visualizar">
+                    <svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
+                </a>
+                <button class="btn btn-sm btn-danger text-white btn-icon-square btn-no-focus rounded" title="Remover" aria-label="Remover">
+                    <svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg>
                 </button>
             </td>
         </tr>

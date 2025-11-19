@@ -4,6 +4,13 @@ SET SEARCH_PATH = cursinho_each;
 
 -- TO DO evento_x_materia
 
+CREATE TABLE IF NOT EXISTS turma(
+	ano INTEGER NOT NULL,
+	periodo CHAR(1) NOT NULL CHECK(periodo in ('M', 'V', 'N')),
+	capacidade INTEGER,
+	PRIMARY KEY (ano, periodo)
+);
+
 CREATE TABLE IF NOT EXISTS pessoa(
 	cpf CHAR(11) NOT NULL,
 	email VARCHAR(100) NOT NULL,
@@ -14,26 +21,12 @@ CREATE TABLE IF NOT EXISTS pessoa(
 	PRIMARY KEY (cpf)
 );
 
-CREATE TABLE IF NOT EXISTS professor(
+CREATE TABLE IF NOT EXISTS aluno(
 	cpf CHAR(11) NOT NULL,
 	ano_escolar INTEGER,
 	matriculado BOOLEAN DEFAULT TRUE,
 	desligado BOOLEAN, ------------------------------------ NECESSÁRIO? NÃO É REDUNDANTE? TEM DIFERENÇA ENTRE NOT MATRICULADO E DESLIGADO?
 	desligado_motivo VARCHAR(100), ------------------------ CRIAR CHECK PARA OBRIGAR PREENCHIMENTO EM CASO DE DESLIGAMENTO?
-	PRIMARY KEY (cpf),
-	FOREIGN KEY (cpf) REFERENCES pessoa(cpf)
-);
-
-CREATE TABLE IF NOT EXISTS turma(
-	ano INTEGER NOT NULL,
-	periodo CHAR(1) NOT NULL CHECK(periodo in ('M', 'V', 'N')),
-	capacidade INTEGER,
-	PRIMARY KEY (ano, periodo)
-);
-
-CREATE TABLE IF NOT EXISTS aluno(
-	cpf CHAR(11) NOT NULL,
-	tipo CHAR(1) NOT NULL CHECK(tipo IN ('A', 'B')), ------- CADÊ O DOMÍNIO?
 	representante_legal CHAR(11) NOT NULL, ----------------- PRECISA CORRIGIR NO DER
 	turma_ano INTEGER NOT NULL,
 	turma_periodo CHAR(1) NOT NULL, ----------------------------------------- UM ALUNO SÓ PODE PARTICIPAR UM ANO?
@@ -41,6 +34,13 @@ CREATE TABLE IF NOT EXISTS aluno(
 	FOREIGN KEY (cpf) REFERENCES pessoa(cpf),
 	FOREIGN KEY (representante_legal) REFERENCES pessoa(cpf),
 	FOREIGN KEY (turma_ano, turma_periodo) REFERENCES turma(ano, periodo)
+);
+
+CREATE TABLE IF NOT EXISTS professor(
+	cpf CHAR(11) NOT NULL,
+	tipo CHAR(1) NOT NULL CHECK(tipo IN ('R', 'M', 'P')),
+	PRIMARY KEY (cpf),
+	FOREIGN KEY (cpf) REFERENCES pessoa(cpf),
 );
 
 CREATE TABLE IF NOT EXISTS materia(

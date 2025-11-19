@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="~/css/navbar.css" asp-append-version="true" />
 </head>
 <body>
+    @await Html.PartialAsync("_Icons")
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
@@ -39,9 +40,9 @@
     </header>
     <div class="container">
         <main role="main" class="pb-3">
-            @if (ViewData["Title"] != null && !string.IsNullOrWhiteSpace(ViewData["Title"].ToString()))
+            @if (ViewData["Title"] is string title && !string.IsNullOrWhiteSpace(title))
             {
-                <h1 class="page-title">@ViewData["Title"]</h1>
+                <h1 class="page-title">@title</h1>
             }
 
             @RenderBody()

@@ -1,7 +1,5 @@
 .logo {
-    /* slightly smaller logo to save vertical space */
-    height: 32px;
-    max-height: 32px;
+    height: 60px;
 }
 
 .navbar {

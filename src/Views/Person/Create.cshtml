@@ -1,0 +1,121 @@
+@{
+    ViewData["Title"] = "Nova pessoa";
+}
+
+<p class="text-muted">Preencha os dados da pessoa. Esta é uma tela inicial e poderá ser expandida depois.</p>
+
+<form asp-action="Create" method="post" class="needs-validation" novalidate autocomplete="off" id="createForm">
+    <div class="card mb-3">
+        <div class="card-body">
+            <h6 class="mb-3">Dados básicos</h6>
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <label for="Papel" class="form-label">Papel <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden"> (obrigatório)</span></label>
+                    <select class="form-select" id="Papel" name="Papel" required>
+                        <option value="" selected disabled>Selecione...</option>
+                        <option>Aluno</option>
+                        <option>Professor</option>
+                        <option>Responsável</option>
+                    </select>
+                    <div class="invalid-feedback">Selecione um papel.</div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label for="CPF" class="form-label">CPF <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden"> (obrigatório)</span></label>
+                    <input type="text" class="form-control cpf-mask" id="CPF" name="CPF" inputmode="numeric" autocomplete="off" required pattern="^\d{3}\.\d{3}\.\d{3}-\d{2}$" title="Formato: 000.000.000-00" data-validate-cpf="true" maxlength="14" />
+                    <div class="invalid-feedback">Informe um CPF válido no formato 000.000.000-00.</div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label for="Nome" class="form-label">Nome <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden"> (obrigatório)</span></label>
+                    <input type="text" class="form-control" id="Nome" name="Nome" autocomplete="off" required maxlength="100" pattern="^(?:[A-Za-zÀ-ÖØ-öø-ÿ]{2,}\s+[A-Za-zÀ-ÖØ-öø-ÿ]{2,}(?:\s+[A-Za-zÀ-ÖØ-öø-ÿ]{2,})*)$" title="Informe nome e sobrenome (mínimo 2 letras cada)." />
+                    <div class="invalid-feedback">Informe o nome.</div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label for="Email" class="form-label">Email <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden"> (obrigatório)</span></label>
+                    <input type="email" class="form-control" id="Email" name="Email" autocomplete="off" required maxlength="100" data-validate-email="true" />
+                    <div class="invalid-feedback">Informe um email válido.</div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label for="DataNascimento" class="form-label">Data de nascimento</label>
+                    <input type="text" class="form-control" id="DataNascimento" name="DataNascimento" inputmode="numeric" maxlength="10" autocomplete="off" />
+                </div>
+                <div class="col-12 col-md-6">
+                    <label for="Telefone" class="form-label">Telefone</label>
+                    <input type="tel" class="form-control" id="Telefone" name="Telefone" inputmode="tel" autocomplete="off" maxlength="15" />
+                </div>
+                <div class="col-12">
+                    <label for="Endereco" class="form-label">Endereço</label>
+                    <input type="text" class="form-control" id="Endereco" name="Endereco" autocomplete="off" maxlength="255" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3 d-none" id="cardOutrasInfo">
+        <div class="card-body">
+            <h6 class="mb-3">Dados de aluno</h6>
+            <div class="row g-3">
+                <div class="col-12 col-md-3">
+                    <label for="RepresentanteLegalCPF" class="form-label">Representante legal (CPF) <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden"> (obrigatório)</span></label>
+                    <input type="text" class="form-control cpf-mask" id="RepresentanteLegalCPF" name="RepresentanteLegalCPF" inputmode="numeric" autocomplete="off" pattern="^\d{3}\.\d{3}\.\d{3}-\d{2}$" title="Formato: 000.000.000-00" data-validate-cpf="true" maxlength="14" />
+                    <div class="invalid-feedback">Informe o CPF do representante legal.</div>
+                </div>
+                <div class="col-12 col-md-3">
+                    <label for="Turma" class="form-label">Turma <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden"> (obrigatório)</span></label>
+                    <select class="form-select" id="Turma" name="Turma">
+                        <option value="" disabled selected>Selecione...</option>
+                        <option>2025 Matutino</option>
+                        <option>2025 Vespertino</option>
+                        <option>2025 Noturno</option>
+                        <option>2024 Matutino</option>
+                        <option>2024 Vespertino</option>
+                        <option>2024 Noturno</option>
+                    </select>
+                    <div class="invalid-feedback">Selecione a turma.</div>
+                </div>
+                <div class="col-12 col-md-3">
+                    <label for="AnoEscolar" class="form-label">Ano escolar</label>
+                    <input type="number" class="form-control" id="AnoEscolar" name="AnoEscolar" min="1" max="4" step="1" autocomplete="off" />
+                </div>
+                <div class="col-12 col-md-3">
+                    <label for="Matriculado" class="form-label">Matriculado</label>
+                    <div class="form-check form-switch mt-1">
+                        <input class="form-check-input" type="checkbox" id="Matriculado" name="Matriculado" value="true" checked>
+                        <label class="form-check-label" for="Matriculado">Sim/Não</label>
+                    </div>
+                </div>
+            </div>
+            <div class="row g-3 mt-1">
+                <div class="col-12 d-none" id="wrapMotivoDesligamento">
+                    <label for="MotivoDesligamento" class="form-label">Motivo desligamento <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden"> (obrigatório)</span></label>
+                    <input type="text" class="form-control" id="MotivoDesligamento" name="MotivoDesligamento" maxlength="100" autocomplete="off" />
+                    <div class="invalid-feedback">Informe o motivo do desligamento (mínimo 10 caracteres).</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3 d-none" id="cardProfessor">
+        <div class="card-body">
+            <h6 class="mb-3">Dados de professor</h6>
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <label for="TipoProfessor" class="form-label">Tipo de professor <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden"> (obrigatório)</span></label>
+                    <select class="form-select" id="TipoProfessor" name="TipoProfessor" disabled required>
+                        <option value="" selected disabled>Selecione...</option>
+                        <option value="Regular">Regular</option>
+                        <option value="Monitor">Monitor</option>
+                        <option value="Plantonista">Plantonista</option>
+                    </select>
+                    <div class="invalid-feedback">Selecione o tipo de professor.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2">
+        <a asp-action="Index" class="btn btn-outline-secondary btn-no-focus">Voltar</a>
+        <button type="submit" class="btn text-white btn-brand btn-no-focus">Salvar</button>
+    </div>
+</form>
+
+@* Script movido para site.js *@
