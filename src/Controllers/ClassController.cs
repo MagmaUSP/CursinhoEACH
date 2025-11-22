@@ -13,10 +13,26 @@ public class ClassController : Controller
         _logger = logger;
     }
 
-    public IActionResult Index()
+    public IActionResult Index() => View();
+    public IActionResult Create() => View();
+    [ValidateAntiForgeryToken]
+    public IActionResult CreatePost()
     {
-        return View();
+        var anoStr = (Request.Form["Ano"].ToString() ?? string.Empty).Trim();
+        var periodoStr = (Request.Form["Periodo"].ToString() ?? string.Empty).Trim();
+
+        if (string.IsNullOrWhiteSpace(anoStr) || string.IsNullOrWhiteSpace(periodoStr))
+            return RedirectToAction("Index");
+
+        // Expect ano as 4 digits and período code as M/V/N
+        var code = periodoStr.Length > 0 ? char.ToUpperInvariant(periodoStr[0]) : ' ';
+        if (anoStr.Length != 4 || (code != 'M' && code != 'V' && code != 'N'))
+            return RedirectToAction("Index");
+
+        var key = $"{anoStr}{code}"; // e.g., 2025M
+        return Redirect($"/Class/{key}");
     }
+    [HttpGet("/Class/{key:length(5)}")] public IActionResult Details(string key) => View();
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()

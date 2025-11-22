@@ -121,6 +121,70 @@
         <button type="button" id="btnCancelar" class="btn btn-danger btn-no-focus d-none">Cancelar</button>
         <a asp-action="Index" class="btn btn-outline-secondary btn-no-focus" id="btnVoltar">Voltar</a>
     </div>
+
+    @if(isProfessor){
+        <div class="mt-3">
+            <table class="table table-sm table-hover">
+                <thead>
+                    <tr>
+                        <th>Matéria</th>
+                        <th>Área</th>
+                        <th>Turma</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>História</td>
+                        <td>Humanas</td>
+                        <td>2025 Matutino</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    }
 </form>
 
 @* Script movido para site.js *@
+
+@section Scripts {
+    <script>
+        (function(){
+            const backBtn = document.getElementById('btnVoltar');
+            if (!backBtn) return;
+
+            function setBackHref(url){ backBtn.setAttribute('href', url); }
+
+            // Prefer explicit return parameter
+            const qs = new URLSearchParams(location.search);
+            const retRaw = qs.get('return') || qs.get('returnUrl') || qs.get('from');
+            if (retRaw) {
+                try {
+                    const decoded = decodeURIComponent(retRaw);
+                    setBackHref(decoded);
+                } catch { setBackHref('/Person'); }
+            } else if (document.referrer) {
+                try {
+                    const ref = new URL(document.referrer);
+                    if (ref.origin === location.origin) {
+                        setBackHref(ref.pathname + ref.search);
+                    } else {
+                        setBackHref('/Person');
+                    }
+                } catch { setBackHref('/Person'); }
+            } else {
+                setBackHref('/Person');
+            }
+
+            // Hide Voltar while in edit mode (mirrors Class/Details behavior)
+            const btnEditar = document.getElementById('btnEditar');
+            const btnSalvar = document.getElementById('btnSalvar');
+            const btnCancelar = document.getElementById('btnCancelar');
+            const toggle = (on) => backBtn.classList.toggle('d-none', on);
+            if (btnEditar && btnSalvar && btnCancelar) {
+                btnEditar.addEventListener('click', () => toggle(true));
+                btnCancelar.addEventListener('click', () => toggle(false));
+                btnSalvar.addEventListener('click', () => toggle(false));
+            }
+        })();
+    </script>
+}
