@@ -173,3 +173,47 @@ span.small {
 #detailsForm .only-edit { display: none; }
 #detailsForm.editing .only-edit { display: inline; }
 
+/* Modo de métricas (Alunos) */
+.metric-modes .btn:focus,
+.metric-modes .btn:active,
+.metric-modes .btn:focus-visible {
+  box-shadow: none !important;
+  outline: none !important;
+}
+.metric-modes .btn.selected {
+  background-color: #5492ca;
+  color: #fff;
+  border-color: #4975ba !important;
+}
+.metric-modes .btn:not(.selected) {
+  background-color: #f0f2f5;
+  color: #0b2440;
+}
+
+/* Charts por matéria */
+.subjects-wrapper { display: none; }
+.subjects-grid { display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: center; }
+.subject-card { width: 360px; display: flex; flex-direction: row; align-items: flex-start; gap: .75rem; padding:.5rem .75rem; border:1px solid #dee2e6; border-radius:.5rem; background:#fff; }
+.subject-legend { flex:1 1 auto; min-width:140px; }
+.subject-chart { width: 140px; height: 140px; display:flex; align-items:center; justify-content:center; font-size:.7rem; border:1px solid #dee2e6; border-radius:50%; }
+
+/* Tabs (Aluno Detalhes) force black text */
+#alunoTabs .nav-link,
+#alunoTabs .nav-link:hover,
+#alunoTabs .nav-link:focus,
+#alunoTabs .nav-link.active {
+  color:#000 !important;
+}
+
+/* Simulados accordion */
+.simulados-list { width:100%; display:flex; flex-direction:column; gap:.5rem; }
+.simulado-item { border:1px solid #dee2e6; border-radius:.5rem; background:#fff; overflow:hidden; }
+.simulado-header { width:100%; background:#f8f9fa; border:0; padding:.75rem 1rem; display:flex; align-items:center; gap:1rem; cursor:pointer; font-weight:500; position:relative; }
+.simulado-header:focus { outline:2px solid #5492ca; outline-offset:2px; }
+.simulado-title { flex:1 1 auto; }
+.simulado-meta { font-size:.875rem; color:#555; }
+.simulado-arrow { transition:transform .25s ease; font-size:.9rem; color:#0b2440; }
+.simulado-item.open .simulado-arrow { transform:rotate(180deg); }
+.simulado-details { border-top:1px solid #dee2e6; background:#fff; padding:1rem 1.25rem; }
+/* Estilos específicos dos botões de assiduidade removidos conforme solicitação */
+

@@ -1,0 +1,170 @@
+@{ ViewData["Title"] = "Alunos"; }
+<div class="mb-4" id="chartsWrapper">
+	<div class="d-flex flex-wrap justify-content-center align-items-start" style="gap:5rem;">
+		<div style="display:flex;flex-direction:column;gap:0.75rem;align-items:flex-start;">
+			<h6 class="mb-0">Desempenho Geral (Questões)</h6>
+			<div class="d-flex align-items-start gap-4">
+				<div id="chartQuestoes"
+					 class="rounded-circle border position-relative"
+					 style="width:240px;height:240px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;background:conic-gradient(#5492ca 0deg 150deg,#ef7b1b 150deg 300deg,#0b2440 300deg 360deg);">
+				</div>
+				<div class="flex-grow-1" style="min-width:220px;">
+					<table class="table table-sm mb-0" style="max-width:260px;">
+						<thead>
+							<tr>
+								<th>Categoria</th>
+								<th class="text-end">%</th>
+							</tr>
+						</thead>
+						<tbody id="legendQuestoes">
+							<tr>
+								<td><span class="badge" style="background:#5492ca">&nbsp;</span> Certas</td>
+								<td class="text-end">41,7%</td>
+							</tr>
+							<tr>
+								<td><span class="badge" style="background:#ef7b1b">&nbsp;</span> Erradas</td>
+								<td class="text-end">50,0%</td>
+							</tr>
+							<tr>
+								<td><span class="badge" style="background:#0b2440">&nbsp;</span> Em branco</td>
+								<td class="text-end">8,3%</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+		<div style="display:flex;flex-direction:column;gap:0.75rem;align-items:flex-start;">
+			<h6 class="mb-0">Presença (Aulas e Simulados)</h6>
+			<div class="d-flex align-items-start gap-4">
+				<div id="chartPresenca"
+					 class="rounded-circle border position-relative"
+					 style="width:240px;height:240px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;background:conic-gradient(#5492ca 0deg 288deg,#ef7b1b 288deg 360deg);">
+				</div>
+				<div class="flex-grow-1" style="min-width:220px;">
+					<table class="table table-sm mb-0" style="max-width:260px;">
+						<thead>
+							<tr>
+								<th>Status</th>
+								<th class="text-end">%</th>
+							</tr>
+						</thead>
+						<tbody id="legendPresenca">
+							<tr>
+								<td><span class="badge" style="background:#5492ca">&nbsp;</span> Presente</td>
+								<td class="text-end">80,0%</td>
+							</tr>
+							<tr>
+								<td><span class="badge" style="background:#ef7b1b">&nbsp;</span> Ausente</td>
+								<td class="text-end">20,0%</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<hr class="my-4" />
+
+<form method="get" class="mb-3" autocomplete="off">
+    <div class="row g-2 align-items-end">
+        <div class="col-12 col-md-3">
+            <label for="fCpf" class="form-label">CPF</label>
+			<input type="text" class="form-control cpf-mask" id="fCpf" name="cpf" maxlength="14" />
+        </div>
+        <div class="col-12 col-md-3">
+            <label for="fNome" class="form-label">Nome</label>
+			<input type="text" class="form-control" id="fNome" name="nome" maxlength="100" />
+        </div>
+        <div class="col-12 col-md-3">
+            <label for="fEmail" class="form-label">Email</label>
+			<input type="text" class="form-control" id="fEmail" name="email" maxlength="100" />
+        </div>
+        <div class="col-12 col-md-3 d-flex gap-2 justify-content-end">
+			<button type="submit" id="btnFiltrarAlunos" class="btn text-white btn-brand btn-no-focus">Filtrar</button>
+            <button type="button" id="btnLimparAlunos" class="btn btn-outline-secondary btn-no-focus">Limpar</button>
+        </div>
+    </div>
+</form>
+
+<table class="table table-hover align-middle" id="tblAlunos">
+	<thead>
+		<tr>
+			<th>CPF</th>
+			<th>Nome</th>
+			<th class="text-end">Presença %</th>
+			<th class="text-end">Média Simulados</th>
+			<th class="text-end">Ações</th>
+		</tr>
+	</thead>
+    <tbody>
+		<tr data-cpf="123.456.789-00" data-nome="João Silva" data-email="joao.silva@exemplo.com">
+			<td>123.456.789-00</td>
+			<td>João Silva</td>
+			<td class="text-end">85,0%</td>
+			<td class="text-end">72,4</td>
+			<td class="text-end">
+				<a href="/Students/123.456.789-00" class="btn btn-secondary text-white btn-icon-square btn-no-focus rounded" title="Detalhes" aria-label="Detalhes">
+					<svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
+				</a>
+			</td>
+		</tr>
+		<tr data-cpf="987.654.321-11" data-nome="Maria Oliveira" data-email="maria.oliveira@exemplo.com">
+			<td>987.654.321-11</td>
+			<td>Maria Oliveira</td>
+			<td class="text-end">92,5%</td>
+			<td class="text-end">80,0</td>
+			<td class="text-end">
+				<a href="/Students/987.654.321-11" class="btn btn-secondary text-white btn-icon-square btn-no-focus rounded" title="Detalhes" aria-label="Detalhes">
+					<svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
+				</a>
+			</td>
+		</tr>
+		<tr data-cpf="111.222.333-44" data-nome="Pedro Santos" data-email="pedro.santos@exemplo.com">
+			<td>111.222.333-44</td>
+			<td>Pedro Santos</td>
+			<td class="text-end">76,3%</td>
+			<td class="text-end">68,7</td>
+			<td class="text-end">
+				<a href="/Students/111.222.333-44" class="btn btn-secondary text-white btn-icon-square btn-no-focus rounded" title="Detalhes" aria-label="Detalhes">
+					<svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
+				</a>
+			</td>
+		</tr>
+		<tr data-cpf="222.333.444-55" data-nome="Ana Souza" data-email="ana.souza@exemplo.com">
+			<td>222.333.444-55</td>
+			<td>Ana Souza</td>
+			<td class="text-end">88,9%</td>
+			<td class="text-end">74,2</td>
+			<td class="text-end">
+				<a href="/Students/222.333.444-55" class="btn btn-secondary text-white btn-icon-square btn-no-focus rounded" title="Detalhes" aria-label="Detalhes">
+					<svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
+				</a>
+			</td>
+		</tr>
+    </tbody>
+</table>
+
+@section Scripts {
+	<script>
+	(function(){
+		const params = new URLSearchParams(location.search);
+		const map = { cpf:'fCpf', nome:'fNome', email:'fEmail' };
+		Object.entries(map).forEach(([k,id])=>{
+			const el = document.getElementById(id);
+			if(el && params.has(k)) el.value = params.get(k);
+		});
+		const btnLimpar = document.getElementById('btnLimparAlunos');
+		if(btnLimpar){
+			btnLimpar.addEventListener('click', ()=>{
+				document.getElementById('fCpf').value='';
+				document.getElementById('fNome').value='';
+				document.getElementById('fEmail').value='';
+			});
+		}
+		// Removido código de toggle de modos
+	})();
+	</script>
+}
