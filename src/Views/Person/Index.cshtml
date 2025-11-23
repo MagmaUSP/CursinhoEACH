@@ -1,10 +1,7 @@
-﻿@{
+﻿@model IEnumerable<CursinhoEACH.DTO.PersonDTO>
+
+@{
     ViewData["Title"] = "Pessoas";
-    var q = Context.Request.Query;
-    string qCpf = q["cpf"].ToString();
-    string qNome = q["nome"].ToString();
-    string qEmail = q["email"].ToString();
-    string qPapel = q["papel"].ToString();
 }
 
 <p class="text-muted">Página para gerenciar pessoas do cursinho (Professores, Alunos e Responsáveis).</p>
@@ -13,23 +10,23 @@
     <div class="row g-2 align-items-end">
         <div class="col-12 col-md-3">
             <label for="cpf" class="form-label">CPF</label>
-            <input type="text" class="form-control cpf-mask" id="cpf" name="cpf" inputmode="numeric" autocomplete="off" maxlength="14" value="@qCpf" />
+            <input type="text" class="form-control" id="cpf" name="cpf" value="@ViewData["FiltroCpf"]" placeholder="Apenas números" />
         </div>
         <div class="col-12 col-md-3">
             <label for="nome" class="form-label">Nome</label>
-            <input type="text" class="form-control" id="nome" name="nome" autocomplete="off" maxlength="100" value="@qNome" />
+            <input type="text" class="form-control" id="nome" name="nome" value="@ViewData["FiltroNome"]" />
         </div>
         <div class="col-12 col-md-3">
             <label for="email" class="form-label">Email</label>
-            <input type="text" class="form-control" id="email" name="email" autocomplete="off" maxlength="100" value="@qEmail" />
+            <input type="text" class="form-control" id="email" name="email" value="@ViewData["FiltroEmail"]" />
         </div>
         <div class="col-12 col-md-3">
             <label for="papel" class="form-label">Papel</label>
             <select class="form-select" id="papel" name="papel">
-                @if (string.IsNullOrEmpty(qPapel)) {<option value="" selected>Todos</option>} else {<option value="">Todos</option>}
-                @if (qPapel == "Aluno") {<option value="Aluno" selected>Aluno</option>} else {<option value="Aluno">Aluno</option>}
-                @if (qPapel == "Professor") {<option value="Professor" selected>Professor</option>} else {<option value="Professor">Professor</option>}
-                @if (qPapel == "Responsável") {<option value="Responsável" selected>Responsável</option>} else {<option value="Responsável">Responsável</option>}
+                <option value="">Todos</option>
+                <option value="Aluno" selected="@(ViewData["FiltroPapel"]?.ToString() == "Aluno")">Aluno</option>
+                <option value="Professor" selected="@(ViewData["FiltroPapel"]?.ToString() == "Professor")">Professor</option>
+                <option value="Responsável" selected="@(ViewData["FiltroPapel"]?.ToString() == "Responsável")">Responsável</option>
             </select>
         </div>
     </div>
@@ -44,10 +41,9 @@
 <hr class="my-3" />
 
 <div class="d-flex justify-content-end align-items-center mb-2">
-    <a asp-action="Create" class="btn text-white btn-add-person btn-no-focus" role="button" title="Adicionar pessoa">
+    <a asp-action="Create" class="btn text-white btn-brand btn-no-focus" role="button" title="Adicionar pessoa">
         Adicionar pessoa
     </a>
-    
 </div>
 
 <table class="table table-hover align-middle">
@@ -60,31 +56,37 @@
         </tr>
     </thead>
     <tbody>
-        <tr>
-            <td>João Silva</td>
-            <td>joao.silva@exemplo.com</td>
-            <td>Aluno</td>
-            <td class="text-end">
-                <a href="/Person/1" class="btn btn-secondary text-white btn-icon-square btn-no-focus rounded me-1" title="Visualizar" aria-label="Visualizar">
-                    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
-                </a>
-                <button class="btn btn-danger text-white btn-icon-square btn-no-focus rounded" title="Remover" aria-label="Remover">
-                    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg>
-                </button>
-            </td>
-        </tr>
-        <tr>
-            <td>Maria Oliveira</td>
-            <td>maria.oliveira@exemplo.com</td>
-            <td>Professor</td>
-            <td class="text-end">
-                <a href="/Person/2" class="btn btn-sm btn-secondary text-white btn-icon-square btn-no-focus rounded me-1" title="Visualizar" aria-label="Visualizar">
-                    <svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
-                </a>
-                <button class="btn btn-sm btn-danger text-white btn-icon-square btn-no-focus rounded" title="Remover" aria-label="Remover">
-                    <svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg>
-                </button>
-            </td>
-        </tr>
+        @foreach (var person in Model)
+        {
+            <tr>
+                <td>@person.Nome</td>
+                <td>@person.Email</td>
+                <td>
+                    @if(person.Papel == "Aluno") { <span class="badge bg-primary">Aluno</span> }
+                    else if(person.Papel == "Professor") { <span class="badge bg-success">Professor</span> }
+                    else { <span class="badge bg-secondary">Responsável</span> }
+                </td>
+                <td class="text-end">
+                    <a asp-action="Details" asp-route-cpf="@person.CPF.Trim()" 
+                       class="btn btn-sm btn-secondary text-white btn-icon-square btn-no-focus rounded me-1" 
+                       title="Visualizar">
+                         <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
+                    </a>
+                    
+                    <button class="btn btn-sm btn-danger text-white btn-icon-square btn-no-focus rounded" title="Remover">
+                        <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg>
+                    </button>
+                </td>
+            </tr>
+        }
+        
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="4" class="text-center text-muted py-4">
+                    Nenhuma pessoa encontrada com os filtros informados.
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

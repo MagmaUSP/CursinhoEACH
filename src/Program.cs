@@ -1,10 +1,16 @@
 using Npgsql;
 using Microsoft.Extensions.Configuration;
+using CursinhoEACH.Data;
+using Dapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var connString = builder.Configuration.GetConnectionString("Postgres");
 builder.Services.AddTransient<NpgsqlConnection>(_ => new NpgsqlConnection(connString));
+
+SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
+builder.Services.AddScoped<DbInitializer>();
+builder.Services.AddScoped<PersonService>();
 
 builder.Services.AddControllersWithViews();
 
@@ -14,6 +20,21 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var initializer = services.GetRequiredService<DbInitializer>();
+        await initializer.InitializeAsync();
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Ocorreu um erro ao criar as tabelas no banco de dados.");
+    }
 }
 
 app.UseHttpsRedirection();

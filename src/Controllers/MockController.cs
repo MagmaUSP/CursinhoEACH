@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using CursinhoEACH.Models;
+using CursinhoEACH.DTO;
 
 namespace CursinhoEACH.Controllers;
 

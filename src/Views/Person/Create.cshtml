@@ -4,14 +4,14 @@
 
 <p class="text-muted">Preencha os dados da pessoa. Esta é uma tela inicial e poderá ser expandida depois.</p>
 
-<form asp-action="Create" method="post" class="needs-validation" novalidate autocomplete="off" id="createForm">
+<form asp-action="create" method="post" class="needs-validation" novalidate autocomplete="off" id="createForm">
     <div class="card mb-3">
         <div class="card-body">
             <h6 class="mb-3">Dados básicos</h6>
             <div class="row g-3">
                 <div class="col-12 col-md-6">
                     <label for="Papel" class="form-label">Papel <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden"> (obrigatório)</span></label>
-                    <select class="form-select" id="Papel" name="Papel" required>
+                    <select class="form-select" id="Papel" name="Papel" required >
                         <option value="" selected disabled>Selecione...</option>
                         <option>Aluno</option>
                         <option>Professor</option>
@@ -63,12 +63,20 @@
                     <label for="Turma" class="form-label">Turma <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden"> (obrigatório)</span></label>
                     <select class="form-select" id="Turma" name="Turma">
                         <option value="" disabled selected>Selecione...</option>
-                        <option>2025 Matutino</option>
-                        <option>2025 Vespertino</option>
-                        <option>2025 Noturno</option>
-                        <option>2024 Matutino</option>
-                        <option>2024 Vespertino</option>
-                        <option>2024 Noturno</option>
+                        @{
+                            int anoMaximo = DateTime.Now.Year + 1; 
+                            int anoMinimo = 2015;
+                            string[] periodos = { "Matutino", "Vespertino", "Noturno" };
+
+                            for (int ano = anoMaximo; ano >= anoMinimo; ano--)
+                            {
+                                foreach (var periodo in periodos)
+                                {
+                                    string valorCombinado = $"{ano} {periodo}";
+                                    <option value="@valorCombinado">@valorCombinado</option>
+                                }
+                            }
+                        }
                     </select>
                     <div class="invalid-feedback">Selecione a turma.</div>
                 </div>
@@ -118,4 +126,21 @@
     </div>
 </form>
 
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger mt-3">
+        @{
+            var erroGlobal = ViewData.ModelState[string.Empty]?.Errors.FirstOrDefault()?.ErrorMessage;
+        }
+
+        @if (!string.IsNullOrEmpty(erroGlobal))
+        {
+            @erroGlobal
+        }
+        else
+        {
+            <span>Ocorreu um erro ao salvar. Por favor, verifique os dados e tente novamente.</span>
+        }
+    </div>
+}
 @* Script movido para site.js *@

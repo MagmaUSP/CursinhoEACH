@@ -1,14 +1,16 @@
-@model CursinhoEACH.Models.PersonViewModel
+@model CursinhoEACH.DTO.PersonDTO2
 @{
     ViewData["Title"] = "Detalhes da pessoa";
     bool isAluno = Model.Papel == "Aluno";
     bool isProfessor = Model.Papel == "Professor";
-    bool showMotivo = isAluno && Model.Matriculado == false && !string.IsNullOrWhiteSpace(Model.MotivoDesligamento);
+    bool showMotivo = isAluno && Model.Student?.Matriculado == false && !string.IsNullOrWhiteSpace(Model.Student?.DesligadoMotivo);
 }
 
-<p class="text-muted">Visualização dos dados cadastrados com os mesmos campos do formulário de criação. Todos estão desabilitados.</p>
+<p class="text-muted">Visualização dos dados cadastrados com os mesmos campos do formulário de criação.
+Todos estão desabilitados.</p>
 
-<form class="needs-validation" novalidate autocomplete="off" id="detailsForm">
+<form class="needs-validation" asp-action="Update" method="post" novalidate autocomplete="off" id="detailsForm">
+    
     <div class="card mb-3">
         <div class="card-body">
             <h6 class="mb-3">Dados básicos</h6>
@@ -16,97 +18,142 @@
                 <div class="col-12 col-md-6">
                     <label for="Papel" class="form-label">Papel <span class="text-danger only-edit" aria-hidden="true">*</span><span class="visually-hidden"> (obrigatório)</span></label>
                     <select class="form-select" id="Papel" name="Papel" disabled required>
-                        @if(Model.Papel=="Aluno"){<option value="Aluno" selected>Aluno</option>} else {<option value="Aluno">Aluno</option>}
-                        @if(Model.Papel=="Professor"){<option value="Professor" selected>Professor</option>} else {<option value="Professor">Professor</option>}
-                        @if(Model.Papel=="Responsável"){<option value="Responsável" selected>Responsável</option>} else {<option value="Responsável">Responsável</option>}
+                        <option value="Aluno" selected="@(Model.Papel == "Aluno")">Aluno</option>
+                        <option value="Professor" selected="@(Model.Papel == "Professor")">Professor</option>
+                        <option value="Responsável" selected="@(Model.Papel == "Responsável")">Responsável</option>
                     </select>
                 </div>
+                
                 <div class="col-12 col-md-6">
                     <label for="CPF" class="form-label">CPF <span class="text-danger only-edit" aria-hidden="true">*</span><span class="visually-hidden"> (obrigatório)</span></label>
-                    <input type="text" class="form-control cpf-mask" id="CPF" name="CPF" value="@(Model.CPF ?? "")" disabled required pattern="^\d{3}\.\d{3}\.\d{3}-\d{2}$" title="Formato: 000.000.000-00" data-validate-cpf="true" maxlength="14" />
+                    <input type="text" class="form-control cpf-mask" id="CPF" name="CPF" value="@(Model.CPF)" disabled required pattern="^\d{3}\.\d{3}\.\d{3}-\d{2}$" title="Formato: 000.000.000-00" data-validate-cpf="true" maxlength="14" />
+                    <input type="hidden" name="CPF" value="@Model.CPF" />
                 </div>
+                
                 <div class="col-12 col-md-6">
                     <label for="Nome" class="form-label">Nome <span class="text-danger only-edit" aria-hidden="true">*</span><span class="visually-hidden"> (obrigatório)</span></label>
-                    <input type="text" class="form-control" id="Nome" name="Nome" value="@Model.Nome" disabled required maxlength="100" pattern="^(?:[A-Za-zÀ-ÖØ-öø-ÿ]{2,}\s+[A-Za-zÀ-ÖØ-öø-ÿ]{2,}(?:\s+[A-Za-zÀ-ÖØ-öø-ÿ]{2,})*)$" title="Informe nome e sobrenome (mínimo 2 letras cada)." />
+                    <input type="text" class="form-control" id="Nome" name="Nome" value="@Model.Nome" disabled required maxlength="100" />
                     <div class="invalid-feedback">Informe o nome.</div>
                 </div>
+                
                 <div class="col-12 col-md-6">
                     <label for="Email" class="form-label">Email <span class="text-danger only-edit" aria-hidden="true">*</span><span class="visually-hidden"> (obrigatório)</span></label>
-                    <input type="email" class="form-control" id="Email" name="Email" value="@Model.Email" disabled required maxlength="100" data-validate-email="true" />
+                    <input type="email" class="form-control" id="Email" name="Email" value="@Model.Email" disabled required maxlength="100" />
                     <div class="invalid-feedback">Informe um email válido.</div>
                 </div>
+                
                 <div class="col-12 col-md-6">
                     <label for="DataNascimento" class="form-label">Data de nascimento</label>
-                    <input type="text" class="form-control" id="DataNascimento" name="DataNascimento" value="@(Model.DataNascimento ?? "")" disabled inputmode="numeric" maxlength="10" />
+                    <input type="text" 
+                        class="form-control" 
+                        id="DataNascimento" 
+                        name="DataNascimento" 
+                        value="@(Model.DataNascimento?.ToString("dd-MM-yyyy"))" 
+                        disabled />
                 </div>
+                                
                 <div class="col-12 col-md-6">
                     <label for="Telefone" class="form-label">Telefone</label>
-                    <input type="text" class="form-control" id="Telefone" name="Telefone" value="@(Model.Telefone ?? "")" disabled inputmode="tel" maxlength="15" />
+                    <input type="text" class="form-control" id="Telefone" name="Telefone" value="@Model.Telefone" disabled inputmode="tel" maxlength="15" />
                 </div>
+                
                 <div class="col-12">
                     <label for="Endereco" class="form-label">Endereço</label>
-                    <input type="text" class="form-control" id="Endereco" name="Endereco" value="@(Model.Endereco ?? "")" disabled maxlength="255" />
+                    <input type="text" class="form-control" id="Endereco" name="Endereco" value="@Model.Endereco" disabled maxlength="255" />
                 </div>
             </div>
         </div>
     </div>
 
-    @if(isAluno){
+    @if(isAluno)
+    {
     <div class="card mb-3" id="cardOutrasInfo">
         <div class="card-body">
             <h6 class="mb-3">Dados de aluno</h6>
             <div class="row g-3">
+                
                 <div class="col-12 col-md-3">
-                    <label for="RepresentanteLegalCPF" class="form-label">Representante legal (CPF) <span class="text-danger only-edit" aria-hidden="true">*</span><span class="visually-hidden"> (obrigatório)</span></label>
-                    <input type="text" class="form-control cpf-mask" id="RepresentanteLegalCPF" name="RepresentanteLegalCPF" value="@(Model.RepresentanteLegalCPF ?? "")" disabled pattern="^\d{3}\.\d{3}\.\d{3}-\d{2}$" title="Formato: 000.000.000-00" data-validate-cpf="true" maxlength="14" />
+                    <label for="RepresentanteLegalCPF" class="form-label">Representante legal (CPF) <span class="text-danger only-edit" aria-hidden="true">*</span></label>
+                    <input type="text" class="form-control cpf-mask" 
+                           id="RepresentanteLegalCPF" 
+                           name="Student.RepresentanteLegal" 
+                           value="@(Model.Student?.RepresentanteLegal)" 
+                           disabled pattern="^\d{3}\.\d{3}\.\d{3}-\d{2}$" />
                     <div class="invalid-feedback">Informe o CPF do representante legal.</div>
                 </div>
+                
                 <div class="col-12 col-md-3">
-                    <label for="Turma" class="form-label">Turma <span class="text-danger only-edit" aria-hidden="true">*</span><span class="visually-hidden"> (obrigatório)</span></label>
-                        <select class="form-select" id="Turma" name="Turma" disabled>
-                            @{ 
-                                var turmaValor = (Model.AnoTurma != null && Model.PeriodoTurma != null) ? ($"{Model.AnoTurma} {Model.PeriodoTurma}") : ""; 
-                                string[] opcoesTurma = new[]{"2025 Matutino","2025 Vespertino","2025 Noturno","2024 Matutino","2024 Vespertino","2024 Noturno"}; 
-                            }
-                            @if(string.IsNullOrEmpty(turmaValor)){<option value="" disabled selected>Selecione...</option>} else {<option value="" disabled>Selecione...</option>}
-                            @foreach(var op in opcoesTurma){ if(op==turmaValor){<option value="@op" selected>@op</option>} else {<option value="@op">@op</option>} }
-                        </select>
+                    <label for="Turma" class="form-label">Turma <span class="text-danger only-edit" aria-hidden="true">*</span></label>
+                    <select class="form-select" id="Turma" name="Student.TurmaSelecionada" disabled>
+                        @{ 
+                            var turmaValor = Model.Student?.TurmaSelecionada; 
+                            string[] opcoesTurma = new[]{"2025 Matutino","2025 Vespertino","2025 Noturno","2024 Matutino","2024 Vespertino","2024 Noturno"}; 
+                        }
+                        <option value="" disabled selected="@(string.IsNullOrEmpty(turmaValor))">Selecione...</option>
+                        @foreach(var op in opcoesTurma)
+                        { 
+                            <option value="@op" selected="@(op == turmaValor)">@op</option> 
+                        }
+                    </select>
                     <div class="invalid-feedback">Selecione a turma.</div>
                 </div>
+                
                 <div class="col-12 col-md-3">
                     <label for="AnoEscolar" class="form-label">Ano escolar</label>
-                    <input type="number" class="form-control" id="AnoEscolar" name="AnoEscolar" value="@(Model.AnoEscolar?.ToString() ?? "")" disabled min="1" max="4" step="1" />
+                    <input type="number" class="form-control" 
+                           id="AnoEscolar" 
+                           name="Student.AnoEscolar" 
+                           value="@(Model.Student?.AnoEscolar)" 
+                           disabled min="1" max="4" step="1" />
                 </div>
+                
                 <div class="col-12 col-md-3">
                     <label for="Matriculado" class="form-label">Matriculado</label>
                     <div class="form-check form-switch mt-1">
-                        <input class="form-check-input" type="checkbox" id="Matriculado" name="Matriculado" value="true" @(Model.Matriculado == true ? "checked" : "") disabled>
+                        <input class="form-check-input" type="checkbox" 
+                            id="Matriculado" 
+                            name="Student.Matriculado" 
+                            value="true" 
+                            checked="@(Model.Student?.Matriculado.GetValueOrDefault() ?? false)" 
+                            disabled>
+                        
+                        <input type="hidden" name="Student.Matriculado" value="false" />
                         <label class="form-check-label" for="Matriculado">Sim/Não</label>
                     </div>
                 </div>
             </div>
-            <div class="row g-3 mt-1">
-                <div class="col-12 @(showMotivo?"":"d-none")" id="wrapMotivoDesligamento">
-                    <label for="MotivoDesligamento" class="form-label">Motivo desligamento <span class="text-danger only-edit" aria-hidden="true">*</span><span class="visually-hidden"> (obrigatório)</span></label>
-                    <input type="text" class="form-control" id="MotivoDesligamento" name="MotivoDesligamento" value="@(Model.MotivoDesligamento ?? "")" disabled minlength="10" maxlength="100" />
-                    <div class="invalid-feedback">Informe o motivo do desligamento (mínimo 10 caracteres).</div>
+            
+            <div class="row g-3 mt-1" id="funcione">
+                <div class="col-12 @(showMotivo ? "" : "d-none")" id="MotivoDesligamentoo">
+                    <label for="MotivoDesligamento" class="form-label">Motivo desligamento <span class="text-danger only-edit">*</span></label>
+                    
+                    <input type="text" class="form-control" 
+                        id="MotivoDesligamento" 
+                        name="Student.DesligadoMotivo" 
+                        value="@(Model.Student?.DesligadoMotivo)" 
+                        disabled minlength="10" maxlength="100" />
+                        
+                    <div class="invalid-feedback">Informe o motivo do desligamento.</div>
                 </div>
             </div>
         </div>
     </div>
     }
-    @if(isProfessor){
+
+    @if(isProfessor)
+    {
     <div class="card mb-3" id="cardProfessor">
         <div class="card-body">
             <h6 class="mb-3">Dados de professor</h6>
             <div class="row g-3">
                 <div class="col-12 col-md-6">
-                    <label for="TipoProfessor" class="form-label">Tipo de professor <span class="text-danger only-edit" aria-hidden="true">*</span><span class="visually-hidden"> (obrigatório)</span></label>
-                    <select class="form-select" id="TipoProfessor" name="TipoProfessor" disabled>
-                        @if(string.IsNullOrWhiteSpace(Model.TipoProfessor)){<option value="" disabled selected>Selecione...</option>} else {<option value="" disabled>Selecione...</option>}
-                        @if(Model.TipoProfessor=="Regular"){<option value="Regular" selected>Regular</option>} else {<option value="Regular">Regular</option>}
-                        @if(Model.TipoProfessor=="Monitor"){<option value="Monitor" selected>Monitor</option>} else {<option value="Monitor">Monitor</option>}
-                        @if(Model.TipoProfessor=="Plantonista"){<option value="Plantonista" selected>Plantonista</option>} else {<option value="Plantonista">Plantonista</option>}
+                    <label for="TipoProfessor" class="form-label">Tipo de professor <span class="text-danger only-edit" aria-hidden="true">*</span></label>
+                    <select class="form-select" id="TipoProfessor" name="Teacher.Tipo" disabled>
+                        @{ var tipoProf = Model.Teacher?.Tipo; }
+                        <option value="" disabled selected="@(string.IsNullOrWhiteSpace(tipoProf))">Selecione...</option>
+                        <option value="Regular" selected="@(tipoProf == "R")">Regular</option>
+                        <option value="Monitor" selected="@(tipoProf == "M")">Monitor</option>
+                        <option value="Plantonista" selected="@(tipoProf == "P")">Plantonista</option>
                     </select>
                     <div class="invalid-feedback">Selecione o tipo de professor.</div>
                 </div>
@@ -123,4 +170,70 @@
     </div>
 </form>
 
-@* Script movido para site.js *@
+
+<script>
+    // 1. Lógica do botão Editar
+    const btnEditar = document.getElementById('btnEditar');
+    const btnSalvar = document.getElementById('btnSalvar');
+    const btnCancelar = document.getElementById('btnCancelar');
+    const form = document.getElementById('detailsForm');
+
+    btnEditar.addEventListener('click', function(e) {
+        e.preventDefault(); // Previne qualquer comportamento padrão
+        
+        console.log("Modo edição ativado");
+
+        // Habilita todos os campos VISUAIS (menos o CPF que é chave)
+        const inputs = form.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            if (input.id !== 'CPF') {
+                input.removeAttribute('disabled');
+            }
+        });
+
+        // Troca os botões
+        btnEditar.classList.add('d-none');
+        btnSalvar.classList.remove('d-none');
+        btnCancelar.classList.remove('d-none');
+    });
+
+    // 2. Lógica de Segurança no Envio (A "Marreta")
+    form.addEventListener('submit', function() {
+        // Antes de enviar, garantimos que NADA está disabled
+        // Se estiver disabled, o navegador não envia.
+        const allInputs = form.querySelectorAll('input, select, textarea');
+        allInputs.forEach(input => {
+            input.removeAttribute('disabled');
+        });
+        
+        // O CPF visual agora está habilitado e será enviado. 
+        // Como você tem um hidden com o mesmo nome, o Controller receberá o valor corretamente.
+    });
+
+    // 3. Botão Cancelar
+    btnCancelar.addEventListener('click', function() {
+        location.reload();
+    });
+
+    // Localiza os elementos
+    const chkMatriculado = document.getElementById('Matriculado');
+    const divMotivo = document.getElementById('funcione');
+    const inputMotivo = document.getElementById('MotivoDesligamentoo');
+
+    if (chkMatriculado) {
+        // Adiciona um "ouvinte" para quando o valor mudar (change)
+        chkMatriculado.addEventListener('change', function() {
+            if (this.checked) {
+                // Se marcou (Matriculado) -> ESCONDE o motivo
+                divMotivo.classList.add('d-none');
+                // Remove obrigatoriedade para não travar o formulário
+                if(inputMotivo) inputMotivo.removeAttribute('required');
+            } else {
+                // Se desmarcou (Não Matriculado) -> MOSTRA o motivo
+                divMotivo.classList.remove('d-none');
+                // Torna obrigatório (se o campo estiver habilitado para edição)
+                if(inputMotivo && !inputMotivo.disabled) inputMotivo.setAttribute('required', 'required');
+            }
+        });
+    }
+</script>
