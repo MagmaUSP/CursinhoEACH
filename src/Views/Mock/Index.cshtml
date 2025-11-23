@@ -1,7 +1,111 @@
 ﻿@{
     ViewData["Title"] = "Simulados";
+    var q = Context.Request.Query;
+    string qCodigo = q["codigo"].ToString();
+    string qData = q["data"].ToString();
+    string qTurma = q["turma"].ToString();
 }
 
-<h1>@ViewData["Title"]</h1>
+<form method="get" class="mb-2" autocomplete="off">
+    <div class="row g-2 align-items-end">
+        <div class="col-12 col-md-3">
+            <label for="codigo" class="form-label">Código</label>
+            <input type="text" class="form-control" id="codigo" name="codigo" maxlength="30" value="@qCodigo" />
+        </div>
+        <div class="col-12 col-md-3">
+            <label for="data" class="form-label">Data</label>
+            <input type="text" class="form-control" id="data_old" name="data_old" inputmode="numeric" maxlength="10" autocomplete="off" value="@qData" style="display:none" aria-hidden="true" />
+            <input type="text" class="form-control" id="data" name="data" inputmode="numeric" maxlength="10" autocomplete="off" pattern="^\d{2}\/\d{2}\/\d{4}$" title="Formato: dd/mm/aaaa" value="@qData" />
+        </div>
+        <div class="col-12 col-md-3">
+            <label for="turma" class="form-label">Turma</label>
+            <input type="text" class="form-control" id="turma" name="turma" maxlength="50" value="@qTurma" />
+        </div>
+        <div class="col-12 col-md-3 d-flex gap-2 justify-content-end">
+            <button type="submit" class="btn text-white btn-brand btn-no-focus">Filtrar</button>
+            <a asp-action="Index" class="btn btn-outline-secondary btn-no-focus">Limpar</a>
+        </div>
+    </div>
+</form>
 
-<p>Página para gerenciar simulados do cursinho.</p>
+<hr class="my-3" />
+
+<table class="table table-hover align-middle">
+    <thead>
+        <tr>
+            <th>Código</th>
+            <th>Data</th>
+            <th>Turma</th>
+            <th class="text-end">Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>SIM-001</td>
+            <td>10/09/2025</td>
+            <td>2025 Matutino</td>
+            <td class="text-end">
+                <a href="/Mock/1" class="btn btn-secondary text-white btn-icon-square btn-no-focus rounded me-1" title="Visualizar" aria-label="Visualizar">
+                    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
+                </a>
+            </td>
+        </tr>
+        <tr>
+            <td>SIM-002</td>
+            <td>25/10/2025</td>
+            <td>2025 Matutino</td>
+            <td class="text-end">
+                <a href="/Mock/2" class="btn btn-sm btn-secondary text-white btn-icon-square btn-no-focus rounded me-1" title="Visualizar" aria-label="Visualizar">
+                    <svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
+                </a>
+            </td>
+        </tr>
+        <tr>
+            <td>SIM-003</td>
+            <td>05/11/2025</td>
+            <td>2025 Matutino</td>
+            <td class="text-end">
+                <a href="/Mock/3" class="btn btn-sm btn-secondary text-white btn-icon-square btn-no-focus rounded me-1" title="Visualizar" aria-label="Visualizar">
+                    <svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
+                </a>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+        (function(){
+        // Máscara de data dd/mm/aaaa para filtro
+        (function(){
+            const input = document.getElementById('data');
+            if(!input) return;
+            function maskDate(v){
+                v = (v||'').replace(/\D/g,'').slice(0,8);
+                let r='';
+                if(v.length>0) r+=v.slice(0,2);
+                if(v.length>=3) r+='/'+v.slice(2,4);
+                if(v.length>=5) r+='/'+v.slice(4,8);
+                return r;
+            }
+            input.addEventListener('input', function(){ this.value = maskDate(this.value); });
+            // Aplicar máscara inicial caso venha preenchido na query
+            input.value = maskDate(input.value);
+        })();
+            const here = location.pathname + location.search;
+            const links = document.querySelectorAll('a[href^="/Mock/"]');
+            links.forEach(a => {
+                try {
+                    const u = new URL(a.getAttribute('href'), location.origin);
+                    if (!/^\/Mock\/\d+$/i.test(u.pathname)) return;
+                    const sp = u.searchParams;
+                    if (!sp.has('return')) {
+                        sp.set('return', here);
+                        u.search = '?' + sp.toString();
+                        a.setAttribute('href', u.pathname + u.search);
+                    }
+                } catch {}
+            });
+        })();
+    </script>
+}

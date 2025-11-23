@@ -1,0 +1,195 @@
+@{ ViewData["Title"] = "Turma"; }
+
+<div class="card">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-12 col-md-4">
+                <div class="fw-semibold small text-muted">Ano</div>
+                <div>2025</div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="fw-semibold small text-muted">Período</div>
+                <div>Matutino (M)</div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="fw-semibold small text-muted">Capacidade</div>
+                <input type="number" class="form-control form-control-sm" id="Capacidade" value="35" min="10" max="100" disabled />
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="fw-semibold small text-muted">Matriculados</div>
+                <div id="MatriculadosValor">28</div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="fw-semibold small text-muted">Ocupação</div>
+                <div class="d-flex flex-column">
+                    <div class="progress" style="height:6px;">
+                        <div class="progress-bar" id="ocupacaoBar" style="width:80%;"></div>
+                    </div>
+                    <span class="small mt-1" id="ocupacaoPct">80%</span>
+                </div>
+            </div>
+        </div>
+        <div class="mt-3 d-flex justify-content-end gap-2" id="actionsWrap">
+            <button type="button" id="btnEditarCapacidade" class="btn btn-brand text-white btn-no-focus">Editar</button>
+            <button type="button" id="btnSalvarCapacidade" class="btn btn-brand text-white btn-no-focus d-none">Salvar</button>
+            <button type="button" id="btnCancelarCapacidade" class="btn btn-danger btn-no-focus d-none">Cancelar</button>
+            <a asp-action="Index" class="btn btn-outline-secondary btn-no-focus" id="btnVoltar">Voltar</a>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        (function(){
+            // --- Editar capacidade com barra de ocupação ---
+            const inputCap = document.getElementById('Capacidade');
+            const spanMatric = document.getElementById('MatriculadosValor');
+            const bar = document.getElementById('ocupacaoBar');
+            const pct = document.getElementById('ocupacaoPct');
+            const btnEditar = document.getElementById('btnEditarCapacidade');
+            const btnSalvar = document.getElementById('btnSalvarCapacidade');
+            const btnCancelar = document.getElementById('btnCancelarCapacidade');
+            const btnVoltar = document.getElementById('btnVoltar');
+
+            if (inputCap && spanMatric && bar && pct && btnEditar && btnSalvar && btnCancelar && btnVoltar) {
+                const min = Number(inputCap.min || 10);
+                const max = Number(inputCap.max || 100);
+                let originalCap = Number(inputCap.value || min);
+                const matriculados = () => Number((spanMatric.textContent || '0').replace(/\D+/g,''));
+                const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+                function recalc(){
+                    const cap = clamp(Number(inputCap.value || originalCap), min, max);
+                    const m = matriculados();
+                    const ratio = cap>0 ? Math.min(1, m/cap) : 0;
+                    const percent = Math.round(ratio*100);
+                    bar.style.width = percent + '%';
+                    pct.textContent = percent + '%';
+                }
+                function setEditing(on){
+                    inputCap.disabled = !on;
+                    btnEditar.classList.toggle('d-none', on);
+                    btnSalvar.classList.toggle('d-none', !on);
+                    btnCancelar.classList.toggle('d-none', !on);
+                    btnVoltar.classList.toggle('d-none', on);
+                    if(on){ originalCap = Number(originalCap || inputCap.value); setTimeout(()=>{ inputCap.focus(); inputCap.select && inputCap.select(); },0); }
+                }
+                btnEditar.addEventListener('click', ()=> setEditing(true));
+                btnCancelar.addEventListener('click', ()=> { inputCap.value = String(originalCap); recalc(); setEditing(false); });
+                btnSalvar.addEventListener('click', ()=> { const v = clamp(Number(inputCap.value || originalCap), min, max); inputCap.value=String(v); originalCap=v; recalc(); setEditing(false); });
+                inputCap.addEventListener('input', recalc);
+                recalc();
+            }
+
+            // --- Adicionar parâmetro de retorno em links de pessoa ---
+            (function addReturn(){
+                const here = location.pathname + location.search;
+                document.querySelectorAll('a[href^="/Person/"]').forEach(a => {
+                    try {
+                        const u = new URL(a.getAttribute('href'), location.origin);
+                        if(!/^\/Person\/\d+$/i.test(u.pathname)) return; // só detalhes
+                        const sp = u.searchParams;
+                        if(!sp.has('return')){ sp.set('return', here); u.search='?' + sp.toString(); a.setAttribute('href', u.pathname + u.search); }
+                    } catch { /* ignora */ }
+                });
+            })();
+        })();
+    </script>
+}
+    <div class="mt-4">
+        <div class="d-flex align-items-end flex-wrap gap-2 mb-3">
+            <h6 class="mb-0 me-auto">Professores da turma</h6>
+            <div class="d-flex align-items-end gap-2">
+                <div>
+                    <label for="NovaMateria" class="form-label small mb-1">Matéria</label>
+                    <select id="NovaMateria" class="form-select form-select-sm" style="min-width: 260px;">
+                        <option value="" selected disabled>Selecione...</option>
+                        <option value="Matemática">Matemática</option>
+                        <option value="Português">Português</option>
+                        <option value="Química">Química</option>
+                        <option value="Física">Física</option>
+                        <option value="Biologia">Biologia</option>
+                        <option value="História">História</option>
+                        <option value="Geografia">Geografia</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="NovoProfessorCPF" class="form-label small mb-1">CPF</label>
+                    <input type="text" id="NovoProfessorCPF" class="form-control form-control-sm cpf-mask" placeholder="000.000.000-00" maxlength="14" />
+                </div>
+                <div class="pt-4">
+                    <button type="button" id="btnAddProfessor" class="btn btn-brand text-white btn-no-focus btn-sm">Adicionar professor</button>
+                </div>
+            </div>
+        </div>
+        <table class="table table-sm table-hover">
+            <thead>
+                <tr>
+                    <th>Matéria</th>
+                    <th>Área</th>
+                    <th>Professor</th>
+                    <th class="text-end">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Matemática</td>
+                    <td>Exatas</td>
+                    <td>Carlos Pereira</td>
+                    <td class="text-end">
+                        <a href="/Person/10" class="btn btn-secondary text-white btn-icon-square btn-no-focus rounded me-1" title="Detalhes" aria-label="Detalhes">
+                            <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
+                        </a>
+                        <button type="button" class="btn btn-danger text-white btn-icon-square btn-no-focus rounded" title="Excluir" aria-label="Excluir">
+                            <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Português</td>
+                    <td>Linguagens</td>
+                    <td>Fernanda Costa</td>
+                    <td class="text-end">
+                        <a href="/Person/11" class="btn btn-secondary text-white btn-icon-square btn-no-focus rounded me-1" title="Detalhes" aria-label="Detalhes">
+                            <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
+                        </a>
+                        <button type="button" class="btn btn-danger text-white btn-icon-square btn-no-focus rounded" title="Excluir" aria-label="Excluir">
+                            <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+         </table>
+            </div>
+        <div class="mt-5">
+    <div class="d-flex align-items-end flex-wrap gap-2 mb-3">
+        <h6 class="mb-0 me-auto">Alunos da turma</h6>
+    </div>
+    <table class="table table-sm table-hover">
+        <thead>
+            <tr>
+                <th>CPF</th>
+                <th>Nome</th>
+                <th class="text-end">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>123.456.789-00</td>
+                <td>Ana Souza</td>
+                <td class="text-end">
+                    <a href="/Person/1" class="btn btn-secondary text-white btn-icon-square btn-no-focus rounded me-1" title="Detalhes" aria-label="Detalhes">
+                        <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
+                    </a>
+                </td>
+            </tr>
+            <tr>
+                <td>234.567.890-11</td>
+                <td>Bruno Lima</td>
+                <td class="text-end">
+                    <a href="/Person/2" class="btn btn-secondary text-white btn-icon-square btn-no-focus rounded me-1" title="Detalhes" aria-label="Detalhes">
+                        <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
+                    </a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

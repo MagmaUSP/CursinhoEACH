@@ -1,7 +1,133 @@
 ﻿@{
     ViewData["Title"] = "Turmas";
+    int currentYear = DateTime.UtcNow.Year;
 }
+<p class="text-muted">Gerencie turmas por ano e período.</p>
 
-<h1>@ViewData["Title"]</h1>
+<form method="get" class="mb-2" autocomplete="off">
+    <div class="row g-2 align-items-end">
+        <div class="col-12 col-md-3">
+            <label for="ano" class="form-label">Ano</label>
+            <select class="form-select" id="ano" name="ano">
+                <option value="">Todos</option>
+                @for (int y = currentYear + 1; y >= 2015; y--) { <option value="@y">@y</option> }
+            </select>
+        </div>
+        <div class="col-12 col-md-3">
+            <label for="periodo" class="form-label">Período</label>
+            <select class="form-select" id="periodo" name="periodo">
+                <option value="">Todos</option>
+                <option value="M">Matutino</option>
+                <option value="V">Vespertino</option>
+                <option value="N">Noturno</option>
+            </select>
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-12 d-flex gap-2 justify-content-end">
+            <button type="submit" class="btn text-white btn-brand btn-no-focus">Filtrar</button>
+            <a asp-action="Index" class="btn btn-outline-secondary btn-no-focus">Limpar</a>
+        </div>
+    </div>
+</form>
 
-<p>Página para gerenciar turmas do cursinho.</p>
+<hr class="my-3" />
+
+<div class="d-flex justify-content-end align-items-center mb-2">
+    <a asp-action="Create" class="btn text-white btn-add-person btn-no-focus" role="button" title="Adicionar turma">
+        Adicionar turma
+    </a>
+</div>
+
+<table class="table table-hover align-middle">
+    <thead>
+        <tr>
+            <th>Ano</th>
+            <th>Período</th>
+            <th>Matriculados/Capacidade</th>
+            <th class="text-end">Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>@currentYear</td>
+            <td>Matutino</td>
+                <td>
+                    <div class="d-flex flex-column">
+                        <span>28/35</span>
+                        <div class="progress" style="height:6px;">
+                            <div class="progress-bar" style="width:80%;"></div>
+                        </div>
+                    </div>
+                </td>
+            <td class="text-end">
+                <a href="/Class/@DateTime.UtcNow.Year@("M")" class="btn btn-secondary text-white btn-icon-square btn-no-focus rounded me-1" title="Visualizar" aria-label="Visualizar">
+                    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
+                </a>
+                <button class="btn btn-danger text-white btn-icon-square btn-no-focus rounded" title="Remover" aria-label="Remover">
+                    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg>
+                </button>
+            </td>
+        </tr>
+        <tr>
+            <td>@currentYear</td>
+            <td>Vespertino</td>
+                <td>
+                    <div class="d-flex flex-column">
+                        <span>31/35</span>
+                        <div class="progress" style="height:6px;">
+                            <div class="progress-bar" style="width:89%;"></div>
+                        </div>
+                    </div>
+                </td>
+            <td class="text-end">
+                <a href="/Class/@DateTime.UtcNow.Year@("V")" class="btn btn-secondary text-white btn-icon-square btn-no-focus rounded me-1" title="Visualizar" aria-label="Visualizar">
+                    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
+                </a>
+                <button class="btn btn-danger text-white btn-icon-square btn-no-focus rounded" title="Remover" aria-label="Remover">
+                    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg>
+                </button>
+            </td>
+        </tr>
+        <tr>
+            <td>@currentYear</td>
+            <td>Noturno</td>
+                <td>
+                    <div class="d-flex flex-column">
+                        <span>22/30</span>
+                        <div class="progress" style="height:6px;">
+                            <div class="progress-bar" style="width:73%;"></div>
+                        </div>
+                    </div>
+                </td>
+            <td class="text-end">
+                <a href="/Class/@DateTime.UtcNow.Year@("N")" class="btn btn-secondary text-white btn-icon-square btn-no-focus rounded me-1" title="Visualizar" aria-label="Visualizar">
+                    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
+                </a>
+                <button class="btn btn-danger text-white btn-icon-square btn-no-focus rounded" title="Remover" aria-label="Remover">
+                    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg>
+                </button>
+            </td>
+        </tr>
+        <tr>
+            <td>@(currentYear-1)</td>
+            <td>Matutino</td>
+                <td>
+                    <div class="d-flex flex-column">
+                        <span>34/35</span>
+                        <div class="progress" style="height:6px;">
+                            <div class="progress-bar" style="width:97%;"></div>
+                        </div>
+                    </div>
+                </td>
+            <td class="text-end">
+                <a href="/Class/@(DateTime.UtcNow.Year-1)@("M")" class="btn btn-secondary text-white btn-icon-square btn-no-focus rounded me-1" title="Visualizar" aria-label="Visualizar">
+                    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
+                </a>
+                <button class="btn btn-danger text-white btn-icon-square btn-no-focus rounded" title="Remover" aria-label="Remover">
+                    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg>
+                </button>
+            </td>
+        </tr>
+    </tbody>
+</table>

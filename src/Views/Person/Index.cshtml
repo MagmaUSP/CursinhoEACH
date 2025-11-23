@@ -90,3 +90,24 @@
         }
     </tbody>
 </table>
+
+@section Scripts {
+    <script>
+        (function(){
+            const here = location.pathname + location.search;
+            const links = document.querySelectorAll('a[href^="/Person/"]');
+            links.forEach(a => {
+                try {
+                    const u = new URL(a.getAttribute('href'), location.origin);
+                    if (!/^\/Person\/\d+$/i.test(u.pathname)) return;
+                    const sp = u.searchParams;
+                    if (!sp.has('return')) {
+                        sp.set('return', here);
+                        u.search = '?' + sp.toString();
+                        a.setAttribute('href', u.pathname + u.search);
+                    }
+                } catch {}
+            });
+        })();
+    </script>
+}
