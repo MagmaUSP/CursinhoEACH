@@ -13,7 +13,11 @@ builder.Services.AddScoped<DbInitializer>();
 builder.Services.AddScoped<PersonService>();
 builder.Services.AddScoped<ClassService>();
 builder.Services.AddScoped<MockService>();
+builder.Services.AddScoped<EvasionService>();
+builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<EvasionNotificationService>();
 
+builder.Services.AddHostedService<WeeklyJobService>();
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
