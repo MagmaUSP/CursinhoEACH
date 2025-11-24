@@ -12,7 +12,7 @@ SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
 builder.Services.AddScoped<DbInitializer>();
 builder.Services.AddScoped<PersonService>();
 builder.Services.AddScoped<ClassService>();
-
+builder.Services.AddScoped<MockService>();
 
 builder.Services.AddControllersWithViews();
 
