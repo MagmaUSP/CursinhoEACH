@@ -20,20 +20,21 @@ public class PersonService
         using var transaction = await _conn.BeginTransactionAsync();
 
         person.CPF = person.CPF.Trim().Replace(".", "").Replace("-", "");
+        
         if (!string.IsNullOrEmpty(person.RepresentanteLegalCPF))
             person.RepresentanteLegalCPF = person.RepresentanteLegalCPF.Trim().Replace(".", "").Replace("-", "");
-
-        Console.WriteLine(person.RepresentanteLegalCPF);
 
         if (!string.IsNullOrEmpty(person.Telefone))
             person.Telefone = person.Telefone.Trim().Replace("(", "").Replace(")", "").Replace("-", "").Replace(" ", "");
 
         try
         {
-            var dataNascimentoParsed = DateOnly.Parse(person.DataNascimento.ToString());
+            DateOnly? dataNascimentoFinal = person.DataNascimento.HasValue 
+                ? DateOnly.FromDateTime(person.DataNascimento.Value) 
+                : null;
 
             var sqlPessoa = @"
-                INSERT INTO pessoa (cpf, nome, email, telefone, endereco, data_nascimento)
+                INSERT INTO cursinho_each.pessoa (cpf, nome, email, telefone, endereco, data_nascimento)
                 VALUES (@CPF, @Nome, @Email, @Telefone, @Endereco, @DataNascimento);";
 
             await _conn.ExecuteAsync(sqlPessoa, new {
@@ -42,31 +43,32 @@ public class PersonService
                 person.Email,
                 person.Telefone,
                 person.Endereco,
-                person.DataNascimento
+                DataNascimento = dataNascimentoFinal 
             }, transaction);
 
             if (person.Papel == "Aluno")
             {
                 if (string.IsNullOrEmpty(person.Turma))
-                    throw new Exception("Dados do aluno incompletos.");
+                    throw new Exception("Dados do aluno incompletos (Turma).");
+                    
                 var parts = person.Turma.Split(' ');
+                if (parts.Length < 2) throw new Exception("Formato da turma inválido.");
+                
                 var anoTurma = int.Parse(parts[0]);
                 var periodoTurma = parts[1].Substring(0, 1);
 
                 var sqlAluno = @"
-                    INSERT INTO aluno (cpf, ano_escolar, matriculado, representante_legal, turma_ano, turma_periodo)
+                    INSERT INTO cursinho_each.aluno (cpf, ano_escolar, matriculado, representante_legal, turma_ano, turma_periodo)
                     VALUES (@CPF, @AnoEscolar, @Matriculado, @RepresentanteLegal, @TurmaAno, @TurmaPeriodo);";
 
-               
-                Student student = new Student {
+                await _conn.ExecuteAsync(sqlAluno, new {
                     Cpf = person.CPF,
                     AnoEscolar = person.AnoEscolar ?? 0,
                     Matriculado = person.Matriculado ?? true,
                     RepresentanteLegal = person.RepresentanteLegalCPF,
                     TurmaAno = anoTurma,
                     TurmaPeriodo = periodoTurma
-                };
-                await _conn.ExecuteAsync(sqlAluno, student, transaction);
+                }, transaction);
             }
             else if (person.Papel == "Professor")
             {
@@ -76,15 +78,13 @@ public class PersonService
                 var tipoChar = person.TipoProfessor.Substring(0, 1); 
 
                 var sqlProfessor = @"
-                    INSERT INTO professor (cpf, tipo)
+                    INSERT INTO cursinho_each.professor (cpf, tipo)
                     VALUES (@CPF, @Tipo);";
 
-                Teacher teacher = new Teacher {
+                await _conn.ExecuteAsync(sqlProfessor, new {
                     Cpf = person.CPF,
                     Tipo = tipoChar
-                };
-
-                await _conn.ExecuteAsync(sqlProfessor, teacher, transaction);
+                }, transaction);
             }
             await transaction.CommitAsync();
         }
@@ -274,6 +274,56 @@ public class PersonService
         {
             await transaction.RollbackAsync();
             throw;
+        }
+    }
+
+    // Adicione este método na classe PersonService
+    public async Task DeletePersonAsync(string cpf)
+    {
+        if (_conn.State != System.Data.ConnectionState.Open) await _conn.OpenAsync();
+        
+        using var transaction = await _conn.BeginTransactionAsync();
+
+        try 
+        {
+            // 1. Limpeza de PROFESSOR (se houver vínculos)
+            // Remove vínculos com turmas antes de apagar o professor
+            await _conn.ExecuteAsync(
+                "DELETE FROM cursinho_each.professor_materia_turma WHERE professor_cpf = @cpf", 
+                new { cpf }, transaction);
+
+            await _conn.ExecuteAsync(
+                "DELETE FROM cursinho_each.professor WHERE cpf = @cpf", 
+                new { cpf }, transaction);
+
+            // 2. Limpeza de ALUNO (se houver vínculos)
+            // É seguro rodar isso mesmo que o aluno não tenha eventos/questões.
+            // Se não tiver nada, o banco apenas ignora e segue em frente.
+            await _conn.ExecuteAsync(
+                "DELETE FROM cursinho_each.aluno_evento WHERE aluno_cpf = @cpf", 
+                new { cpf }, transaction);
+                
+            await _conn.ExecuteAsync(
+                "DELETE FROM cursinho_each.aluno_questao WHERE aluno_cpf = @cpf", 
+                new { cpf }, transaction);
+
+            await _conn.ExecuteAsync(
+                "DELETE FROM cursinho_each.aluno WHERE cpf = @cpf", 
+                new { cpf }, transaction);
+
+            // 3. Limpeza de PESSOA (O pai de todos)
+            // Se essa pessoa for Representante Legal de OUTRO aluno ativo, o banco vai travar aqui (Erro 23503).
+            // Isso é o comportamento correto: não podemos apagar um responsável que ainda tem dependentes no sistema.
+            await _conn.ExecuteAsync(
+                "DELETE FROM cursinho_each.pessoa WHERE cpf = @cpf", 
+                new { cpf }, transaction);
+
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw; // O Controller captura a exceção e exibe a mensagem de erro apropriada
         }
     }
 }

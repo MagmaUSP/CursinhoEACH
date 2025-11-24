@@ -1,31 +1,42 @@
+@model CursinhoEACH.DTO.ClassDetailsDTO
 @{ ViewData["Title"] = "Turma"; }
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show mt-2" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<input type="hidden" id="ClassKey" value="@Model.Key" />
 
 <div class="card">
     <div class="card-body">
         <div class="row g-3">
             <div class="col-12 col-md-4">
                 <div class="fw-semibold small text-muted">Ano</div>
-                <div>2025</div>
+                <div>@Model.Ano</div>
             </div>
             <div class="col-12 col-md-4">
                 <div class="fw-semibold small text-muted">Período</div>
-                <div>Matutino (M)</div>
+                <div>@Model.PeriodoExtenso (@Model.Periodo)</div>
             </div>
             <div class="col-12 col-md-4">
                 <div class="fw-semibold small text-muted">Capacidade</div>
-                <input type="number" class="form-control form-control-sm" id="Capacidade" value="35" min="10" max="100" disabled />
+                <input type="number" class="form-control form-control-sm" id="Capacidade" value="@Model.Capacidade" min="10" max="100" disabled />
             </div>
             <div class="col-12 col-md-4">
                 <div class="fw-semibold small text-muted">Matriculados</div>
-                <div id="MatriculadosValor">28</div>
+                <div id="MatriculadosValor">@Model.Matriculados</div>
             </div>
             <div class="col-12 col-md-4">
                 <div class="fw-semibold small text-muted">Ocupação</div>
                 <div class="d-flex flex-column">
                     <div class="progress" style="height:6px;">
-                        <div class="progress-bar" id="ocupacaoBar" style="width:80%;"></div>
+                        <div class="progress-bar" id="ocupacaoBar" style="width:@Model.OcupacaoPorcentagem%;"></div>
                     </div>
-                    <span class="small mt-1" id="ocupacaoPct">80%</span>
+                    <span class="small mt-1" id="ocupacaoPct">@Model.OcupacaoPorcentagem%</span>
                 </div>
             </div>
         </div>
@@ -37,10 +48,11 @@
         </div>
     </div>
 </div>
+
 @section Scripts {
     <script>
         (function(){
-            // --- Editar capacidade com barra de ocupação ---
+            // --- JS Original com Modificação para salvar no backend ---
             const inputCap = document.getElementById('Capacidade');
             const spanMatric = document.getElementById('MatriculadosValor');
             const bar = document.getElementById('ocupacaoBar');
@@ -49,6 +61,7 @@
             const btnSalvar = document.getElementById('btnSalvarCapacidade');
             const btnCancelar = document.getElementById('btnCancelarCapacidade');
             const btnVoltar = document.getElementById('btnVoltar');
+            const classKey = document.getElementById('ClassKey').value; // Chave para o backend
 
             if (inputCap && spanMatric && bar && pct && btnEditar && btnSalvar && btnCancelar && btnVoltar) {
                 const min = Number(inputCap.min || 10);
@@ -56,6 +69,7 @@
                 let originalCap = Number(inputCap.value || min);
                 const matriculados = () => Number((spanMatric.textContent || '0').replace(/\D+/g,''));
                 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
                 function recalc(){
                     const cap = clamp(Number(inputCap.value || originalCap), min, max);
                     const m = matriculados();
@@ -64,62 +78,99 @@
                     bar.style.width = percent + '%';
                     pct.textContent = percent + '%';
                 }
+
                 function setEditing(on){
                     inputCap.disabled = !on;
                     btnEditar.classList.toggle('d-none', on);
                     btnSalvar.classList.toggle('d-none', !on);
                     btnCancelar.classList.toggle('d-none', !on);
                     btnVoltar.classList.toggle('d-none', on);
-                    if(on){ originalCap = Number(originalCap || inputCap.value); setTimeout(()=>{ inputCap.focus(); inputCap.select && inputCap.select(); },0); }
+                    if(on){ 
+                        originalCap = Number(inputCap.value); 
+                        setTimeout(()=>{ inputCap.focus(); inputCap.select && inputCap.select(); },0);
+                    }
                 }
+
                 btnEditar.addEventListener('click', ()=> setEditing(true));
-                btnCancelar.addEventListener('click', ()=> { inputCap.value = String(originalCap); recalc(); setEditing(false); });
-                btnSalvar.addEventListener('click', ()=> { const v = clamp(Number(inputCap.value || originalCap), min, max); inputCap.value=String(v); originalCap=v; recalc(); setEditing(false); });
+                
+                btnCancelar.addEventListener('click', ()=> { 
+                    inputCap.value = String(originalCap); 
+                    recalc(); 
+                    setEditing(false); 
+                });
+
+                // AJAX PARA SALVAR
+                btnSalvar.addEventListener('click', ()=> { 
+                    const v = clamp(Number(inputCap.value || originalCap), min, max); 
+                    
+                    // Envia para o backend
+                    fetch('/Class/UpdateCapacity', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ key: classKey, capacidade: v })
+                    }).then(res => {
+                        if(res.ok) {
+                            inputCap.value=String(v); 
+                            originalCap=v; 
+                            recalc(); 
+                            setEditing(false);
+                        } else {
+                            alert('Erro ao salvar capacidade.');
+                        }
+                    });
+                });
+
                 inputCap.addEventListener('input', recalc);
                 recalc();
             }
 
-            // --- Adicionar parâmetro de retorno em links de pessoa ---
-            (function addReturn(){
-                const here = location.pathname + location.search;
-                document.querySelectorAll('a[href^="/Person/"]').forEach(a => {
-                    try {
-                        const u = new URL(a.getAttribute('href'), location.origin);
-                        if(!/^\/Person\/\d+$/i.test(u.pathname)) return; // só detalhes
-                        const sp = u.searchParams;
-                        if(!sp.has('return')){ sp.set('return', here); u.search='?' + sp.toString(); a.setAttribute('href', u.pathname + u.search); }
-                    } catch { /* ignora */ }
-                });
+            // ... (Resto do script addReturn mantido igual) ...
+                (function addReturn(){
+                    const here = location.pathname + location.search;
+                    document.querySelectorAll('a[href^="/Person/"]').forEach(a => {
+                        try {
+                            const u = new URL(a.getAttribute('href'), location.origin);
+                            if(!/^\/Person\/\d+$/i.test(u.pathname)) return; // só detalhes
+                            const sp = u.searchParams;
+                            if(!sp.has('return')){ sp.set('return', here); u.search='?' + sp.toString(); a.setAttribute('href', u.pathname + u.search); }
+                        } catch { /* ignora */ }
+                    });
+                })();
             })();
-        })();
+            
     </script>
 }
+
     <div class="mt-4">
-        <div class="d-flex align-items-end flex-wrap gap-2 mb-3">
-            <h6 class="mb-0 me-auto">Professores da turma</h6>
-            <div class="d-flex align-items-end gap-2">
-                <div>
-                    <label for="NovaMateria" class="form-label small mb-1">Matéria</label>
-                    <select id="NovaMateria" class="form-select form-select-sm" style="min-width: 260px;">
-                        <option value="" selected disabled>Selecione...</option>
-                        <option value="Matemática">Matemática</option>
-                        <option value="Português">Português</option>
-                        <option value="Química">Química</option>
-                        <option value="Física">Física</option>
-                        <option value="Biologia">Biologia</option>
-                        <option value="História">História</option>
-                        <option value="Geografia">Geografia</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="NovoProfessorCPF" class="form-label small mb-1">CPF</label>
-                    <input type="text" id="NovoProfessorCPF" class="form-control form-control-sm cpf-mask" placeholder="000.000.000-00" maxlength="14" />
-                </div>
-                <div class="pt-4">
-                    <button type="button" id="btnAddProfessor" class="btn btn-brand text-white btn-no-focus btn-sm">Adicionar professor</button>
+        <form asp-action="AddTeacher" method="post">
+            <input type="hidden" name="Key" value="@Model.Key" />
+            <div class="d-flex align-items-end flex-wrap gap-2 mb-3">
+                <h6 class="mb-0 me-auto">Professores da turma</h6>
+                <div class="d-flex align-items-end gap-2">
+                    <div>
+                        <label for="NovaMateria" class="form-label small mb-1">Matéria</label>
+                        <select id="NovaMateria" name="Materia" class="form-select form-select-sm" style="min-width: 260px;" required>
+                            <option value="" selected disabled>Selecione...</option>
+                            <option value="Matemática">Matemática</option>
+                            <option value="Português">Português</option>
+                            <option value="Química">Química</option>
+                            <option value="Física">Física</option>
+                            <option value="Biologia">Biologia</option>
+                            <option value="História">História</option>
+                            <option value="Geografia">Geografia</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="NovoProfessorCPF" class="form-label small mb-1">CPF</label>
+                        <input type="text" id="NovoProfessorCPF" name="ProfessorCPF" class="form-control form-control-sm cpf-mask" placeholder="000.000.000-00" maxlength="14" required />
+                    </div>
+                    <div class="pt-4">
+                        <button type="submit" id="btnAddProfessor" class="btn btn-brand text-white btn-no-focus btn-sm">Adicionar professor</button>
+                    </div>
                 </div>
             </div>
-        </div>
+        </form>
+
         <table class="table table-sm table-hover">
             <thead>
                 <tr>
@@ -130,66 +181,55 @@
                 </tr>
             </thead>
             <tbody>
+                @foreach(var teacher in Model.Teachers) {
                 <tr>
-                    <td>Matemática</td>
-                    <td>Exatas</td>
-                    <td>Carlos Pereira</td>
+                    <td>@teacher.Materia</td>
+                    <td>@teacher.Area</td>
+                    <td>@teacher.Nome</td>
                     <td class="text-end">
-                        <a href="/Person/10" class="btn btn-secondary text-white btn-icon-square btn-no-focus rounded me-1" title="Detalhes" aria-label="Detalhes">
+                        <a href="/Person/@teacher.CPF" class="btn btn-secondary text-white btn-icon-square btn-no-focus rounded me-1" title="Detalhes" aria-label="Detalhes">
                             <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
                         </a>
-                        <button type="button" class="btn btn-danger text-white btn-icon-square btn-no-focus rounded" title="Excluir" aria-label="Excluir">
+                        <a asp-action="RemoveTeacher" asp-route-key="@Model.Key" asp-route-cpf="@teacher.CPF" class="btn btn-danger text-white btn-icon-square btn-no-focus rounded" title="Excluir" aria-label="Excluir" onclick="return confirm('Remover professor desta turma?');">
                             <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg>
-                        </button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Português</td>
-                    <td>Linguagens</td>
-                    <td>Fernanda Costa</td>
-                    <td class="text-end">
-                        <a href="/Person/11" class="btn btn-secondary text-white btn-icon-square btn-no-focus rounded me-1" title="Detalhes" aria-label="Detalhes">
-                            <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
                         </a>
-                        <button type="button" class="btn btn-danger text-white btn-icon-square btn-no-focus rounded" title="Excluir" aria-label="Excluir">
-                            <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg>
-                        </button>
                     </td>
                 </tr>
+                }
+                @if(!Model.Teachers.Any()) {
+                    <tr><td colspan="4" class="text-muted small">Nenhum professor alocado.</td></tr>
+                }
             </tbody>
          </table>
-            </div>
-        <div class="mt-5">
-    <div class="d-flex align-items-end flex-wrap gap-2 mb-3">
-        <h6 class="mb-0 me-auto">Alunos da turma</h6>
     </div>
-    <table class="table table-sm table-hover">
-        <thead>
-            <tr>
-                <th>CPF</th>
-                <th>Nome</th>
-                <th class="text-end">Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>123.456.789-00</td>
-                <td>Ana Souza</td>
-                <td class="text-end">
-                    <a href="/Person/1" class="btn btn-secondary text-white btn-icon-square btn-no-focus rounded me-1" title="Detalhes" aria-label="Detalhes">
-                        <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
-                    </a>
-                </td>
-            </tr>
-            <tr>
-                <td>234.567.890-11</td>
-                <td>Bruno Lima</td>
-                <td class="text-end">
-                    <a href="/Person/2" class="btn btn-secondary text-white btn-icon-square btn-no-focus rounded me-1" title="Detalhes" aria-label="Detalhes">
-                        <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
-                    </a>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</div>
+
+    <div class="mt-5">
+        <div class="d-flex align-items-end flex-wrap gap-2 mb-3">
+            <h6 class="mb-0 me-auto">Alunos da turma</h6>
+        </div>
+        <table class="table table-sm table-hover">
+            <thead>
+                <tr>
+                    <th>CPF</th>
+                    <th>Nome</th>
+                    <th class="text-end">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach(var aluno in Model.Students) {
+                <tr>
+                    <td>@aluno.CPF</td>
+                    <td>@aluno.Nome</td>
+                    <td class="text-end">
+                        <a href="/Person/@aluno.CPF" class="btn btn-secondary text-white btn-icon-square btn-no-focus rounded me-1" title="Detalhes" aria-label="Detalhes">
+                            <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
+                        </a>
+                    </td>
+                </tr>
+                }
+                @if(!Model.Students.Any()) {
+                    <tr><td colspan="3" class="text-muted small">Nenhum aluno matriculado.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>

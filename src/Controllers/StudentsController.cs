@@ -13,7 +13,7 @@ namespace CursinhoEACH.Controllers
         {
             ViewData["Title"] = "Detalhes do Aluno";
                 ViewData["AlunoCpf"] = cpf;
-                var alunos = new Dictionary<string, (string Nome, string Email, string? Telefone)>
+                var alunos = new Dictionary<string, (string Nome, string Email, string Telefone)>
                 {
                     {"123.456.789-00", ("João Silva", "joao.silva@exemplo.com", "(11) 91234-5678")},
                     {"987.654.321-11", ("Maria Oliveira", "maria.oliveira@exemplo.com", null)},

@@ -6,6 +6,14 @@
     bool showMotivo = isAluno && Model.Student?.Matriculado == false && !string.IsNullOrWhiteSpace(Model.Student?.DesligadoMotivo);
 }
 
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
 <p class="text-muted">Visualização dos dados cadastrados com os mesmos campos do formulário de criação.
 Todos estão desabilitados.</p>
 

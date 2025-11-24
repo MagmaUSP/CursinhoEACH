@@ -1,7 +1,19 @@
-﻿@{
+﻿@model IEnumerable<CursinhoEACH.DTO.ClassDTO>
+@{
     ViewData["Title"] = "Turmas";
     int currentYear = DateTime.UtcNow.Year;
+    int? filtroAno = ViewData["FiltroAno"] as int?;
+    string filtroPeriodo = ViewData["FiltroPeriodo"] as string;
 }
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
 <p class="text-muted">Gerencie turmas por ano e período.</p>
 
 <form method="get" class="mb-2" autocomplete="off">
@@ -10,16 +22,18 @@
             <label for="ano" class="form-label">Ano</label>
             <select class="form-select" id="ano" name="ano">
                 <option value="">Todos</option>
-                @for (int y = currentYear + 1; y >= 2015; y--) { <option value="@y">@y</option> }
+                @for (int y = currentYear + 1; y >= 2015; y--) { 
+                   <option value="@y" selected="@(filtroAno == y)">@y</option> 
+                }
             </select>
         </div>
         <div class="col-12 col-md-3">
             <label for="periodo" class="form-label">Período</label>
             <select class="form-select" id="periodo" name="periodo">
                 <option value="">Todos</option>
-                <option value="M">Matutino</option>
-                <option value="V">Vespertino</option>
-                <option value="N">Noturno</option>
+                <option value="M" selected="@(filtroPeriodo == "M")">Matutino</option>
+                <option value="V" selected="@(filtroPeriodo == "V")">Vespertino</option>
+                <option value="N" selected="@(filtroPeriodo == "N")">Noturno</option>
             </select>
         </div>
     </div>
@@ -49,85 +63,30 @@
         </tr>
     </thead>
     <tbody>
+        @foreach(var item in Model) {
         <tr>
-            <td>@currentYear</td>
-            <td>Matutino</td>
-                <td>
-                    <div class="d-flex flex-column">
-                        <span>28/35</span>
-                        <div class="progress" style="height:6px;">
-                            <div class="progress-bar" style="width:80%;"></div>
-                        </div>
+            <td>@item.Ano</td>
+            <td>@item.PeriodoExtenso</td>
+            <td>
+                <div class="d-flex flex-column">
+                    <span>@item.Matriculados/@item.Capacidade</span>
+                    <div class="progress" style="height:6px;">
+                        <div class="progress-bar" style="width:@item.OcupacaoPorcentagem%;"></div>
                     </div>
-                </td>
+                </div>
+            </td>
             <td class="text-end">
-                <a href="/Class/@DateTime.UtcNow.Year@("M")" class="btn btn-secondary text-white btn-icon-square btn-no-focus rounded me-1" title="Visualizar" aria-label="Visualizar">
+                <a href="/Class/@item.Key" class="btn btn-secondary text-white btn-icon-square btn-no-focus rounded me-1" title="Visualizar" aria-label="Visualizar">
                     <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
                 </a>
-                <button class="btn btn-danger text-white btn-icon-square btn-no-focus rounded" title="Remover" aria-label="Remover">
+                <a asp-action="Delete" asp-route-key="@item.Key" onclick="return confirm('Tem certeza?');" class="btn btn-danger text-white btn-icon-square btn-no-focus rounded" title="Remover" aria-label="Remover">
                     <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg>
-                </button>
-            </td>
-        </tr>
-        <tr>
-            <td>@currentYear</td>
-            <td>Vespertino</td>
-                <td>
-                    <div class="d-flex flex-column">
-                        <span>31/35</span>
-                        <div class="progress" style="height:6px;">
-                            <div class="progress-bar" style="width:89%;"></div>
-                        </div>
-                    </div>
-                </td>
-            <td class="text-end">
-                <a href="/Class/@DateTime.UtcNow.Year@("V")" class="btn btn-secondary text-white btn-icon-square btn-no-focus rounded me-1" title="Visualizar" aria-label="Visualizar">
-                    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
                 </a>
-                <button class="btn btn-danger text-white btn-icon-square btn-no-focus rounded" title="Remover" aria-label="Remover">
-                    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg>
-                </button>
             </td>
         </tr>
-        <tr>
-            <td>@currentYear</td>
-            <td>Noturno</td>
-                <td>
-                    <div class="d-flex flex-column">
-                        <span>22/30</span>
-                        <div class="progress" style="height:6px;">
-                            <div class="progress-bar" style="width:73%;"></div>
-                        </div>
-                    </div>
-                </td>
-            <td class="text-end">
-                <a href="/Class/@DateTime.UtcNow.Year@("N")" class="btn btn-secondary text-white btn-icon-square btn-no-focus rounded me-1" title="Visualizar" aria-label="Visualizar">
-                    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
-                </a>
-                <button class="btn btn-danger text-white btn-icon-square btn-no-focus rounded" title="Remover" aria-label="Remover">
-                    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg>
-                </button>
-            </td>
-        </tr>
-        <tr>
-            <td>@(currentYear-1)</td>
-            <td>Matutino</td>
-                <td>
-                    <div class="d-flex flex-column">
-                        <span>34/35</span>
-                        <div class="progress" style="height:6px;">
-                            <div class="progress-bar" style="width:97%;"></div>
-                        </div>
-                    </div>
-                </td>
-            <td class="text-end">
-                <a href="/Class/@(DateTime.UtcNow.Year-1)@("M")" class="btn btn-secondary text-white btn-icon-square btn-no-focus rounded me-1" title="Visualizar" aria-label="Visualizar">
-                    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
-                </a>
-                <button class="btn btn-danger text-white btn-icon-square btn-no-focus rounded" title="Remover" aria-label="Remover">
-                    <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg>
-                </button>
-            </td>
-        </tr>
+        }
+        @if(!Model.Any()){
+            <tr><td colspan="4" class="text-center text-muted">Nenhuma turma encontrada.</td></tr>
+        }
     </tbody>
 </table>

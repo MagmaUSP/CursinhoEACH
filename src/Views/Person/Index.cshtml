@@ -4,6 +4,14 @@
     ViewData["Title"] = "Pessoas";
 }
 
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
 <p class="text-muted">Página para gerenciar pessoas do cursinho (Professores, Alunos e Responsáveis).</p>
 
 <form method="get" class="mb-2" autocomplete="off">
@@ -73,9 +81,12 @@
                          <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
                     </a>
                     
-                    <button class="btn btn-sm btn-danger text-white btn-icon-square btn-no-focus rounded" title="Remover">
+                    <a asp-action="Delete" asp-route-cpf="@person.CPF" 
+                       onclick="return confirm('Tem certeza que deseja excluir @person.Nome?');"
+                       class="btn btn-danger text-white btn-icon-square btn-no-focus rounded" 
+                       title="Excluir">
                         <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-x"></use></svg>
-                    </button>
+                    </a>
                 </td>
             </tr>
         }
