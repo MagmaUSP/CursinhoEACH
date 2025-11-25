@@ -16,6 +16,7 @@ builder.Services.AddScoped<MockService>();
 builder.Services.AddScoped<EvasionService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<EvasionNotificationService>();
+builder.Services.AddScoped<StudentService>();
 
 builder.Services.AddHostedService<WeeklyJobService>();
 builder.Services.AddControllersWithViews();

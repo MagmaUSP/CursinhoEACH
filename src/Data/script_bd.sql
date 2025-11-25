@@ -2,14 +2,6 @@ CREATE SCHEMA IF NOT EXISTS cursinho_each;
 
 SET SEARCH_PATH = cursinho_each;
 
-CREATE TABLE IF NOT EXISTS 	evento_materia (
-	evento_id BIGINT NOT NULL,
-	materia_nome VARCHAR(50) NOT NULL,
-	PRIMARY KEY (evento_id, materia_nome),
-	FOREIGN KEY (evento_id) REFERENCES evento(id),
-	FOREIGN KEY (materia_nome) REFERENCES materia(nome)
-);
-
 CREATE TABLE IF NOT EXISTS turma(
 	ano INTEGER NOT NULL,
 	periodo CHAR(1) NOT NULL CHECK(periodo in ('M', 'V', 'N')),
@@ -72,6 +64,14 @@ CREATE TABLE IF NOT EXISTS evento(
 	prova_id BIGINT,
 	PRIMARY KEY (id),
 	FOREIGN KEY (prova_id) REFERENCES prova(id)
+);
+
+CREATE TABLE IF NOT EXISTS 	evento_materia (
+	evento_id BIGINT NOT NULL,
+	materia_nome VARCHAR(50) NOT NULL,
+	PRIMARY KEY (evento_id, materia_nome),
+	FOREIGN KEY (evento_id) REFERENCES evento(id),
+	FOREIGN KEY (materia_nome) REFERENCES materia(nome)
 );
 
 CREATE TABLE IF NOT EXISTS questao(

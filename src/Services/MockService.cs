@@ -171,10 +171,11 @@ public class MockService
                 COUNT(CASE WHEN aq.alternativa != q.gabarito AND aq.alternativa IS NOT NULL THEN 1 END) as Erradas,
                 COUNT(CASE WHEN aq.alternativa IS NULL THEN 1 END) as Branco
             FROM cursinho_each.aluno_evento ae
-            JOIN cursinho_each.aluno_questao aq ON ae.aluno_cpf = aq.aluno_cpf
+            LEFT JOIN cursinho_each.aluno_questao aq ON ae.aluno_cpf = aq.aluno_cpf
             JOIN cursinho_each.evento e ON ae.evento_id = e.id
-            JOIN cursinho_each.questao q ON e.prova_id = q.prova_id AND aq.questao_numero = q.numero
             WHERE ae.evento_id = @Id";
+        // JOIN cursinho_each.questao q ON e.prova_id = q.prova_id AND aq.questao_numero = q.numero
+        
 
         var row = await _conn.QuerySingleOrDefaultAsync<dynamic>(sqlStats, new { Id = eventoId });
 

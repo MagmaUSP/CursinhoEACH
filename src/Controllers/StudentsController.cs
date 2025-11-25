@@ -1,37 +1,54 @@
 using Microsoft.AspNetCore.Mvc;
+using CursinhoEACH.DTO;
 
 namespace CursinhoEACH.Controllers
 {
     [Route("Students")]
     public class StudentsController : Controller
     {
+        private readonly StudentService _studentService;
+
+        public StudentsController(StudentService studentService)
+        {
+            _studentService = studentService;
+        }
+
         [HttpGet]
-        public IActionResult Index() => View();
+        public async Task<IActionResult> Index(string cpf, string nome, string email)
+        {
+            // 1. Busca os dados de sumário (Para os gráficos do topo)
+            var dashboardData = await _studentService.GetDashboardSummaryAsync(cpf, nome, email);
+
+            // 2. Busca a lista de alunos (Para a tabela)
+            var studentsList = await _studentService.GetAllStudentsAsync(cpf, nome, email);
+            
+            // 3. Monta o ViewModel
+            var viewModel = new StudentsIndexViewModel
+            {
+                Dashboard = dashboardData,
+                Students = studentsList
+            };
+
+            // Mantém os filtros na View
+            ViewData["FiltroCpf"] = cpf;
+            ViewData["FiltroNome"] = nome;
+            ViewData["FiltroEmail"] = email;
+
+            return View(viewModel);
+        }
 
         [HttpGet("{cpf}")]
-        public IActionResult Details(string cpf)
+        public async Task<IActionResult> Details(string cpf)
         {
+            var profile = await _studentService.GetStudentProfileAsync(cpf);
+            
+            if (profile == null) 
+            {
+                return NotFound();
+            }
+
             ViewData["Title"] = "Detalhes do Aluno";
-                ViewData["AlunoCpf"] = cpf;
-                var alunos = new Dictionary<string, (string Nome, string Email, string Telefone)>
-                {
-                    {"123.456.789-00", ("João Silva", "joao.silva@exemplo.com", "(11) 91234-5678")},
-                    {"987.654.321-11", ("Maria Oliveira", "maria.oliveira@exemplo.com", null)},
-                    {"111.222.333-44", ("Pedro Santos", "pedro.santos@exemplo.com", "(11) 99876-5432")},
-                    {"222.333.444-55", ("Ana Souza", "ana.souza@exemplo.com", null)}
-                };
-                if(alunos.TryGetValue(cpf, out var dados))
-                {
-                    ViewData["AlunoNome"] = dados.Nome;
-                    ViewData["AlunoEmail"] = dados.Email;
-                    if (!string.IsNullOrWhiteSpace(dados.Telefone)) ViewData["AlunoTelefone"] = dados.Telefone;
-                }
-                else
-                {
-                    ViewData["AlunoNome"] = "Aluno não encontrado";
-                    ViewData["AlunoEmail"] = "--";
-                }
-            return View();
+            return View(profile);
         }
     }
 }

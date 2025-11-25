@@ -1,58 +1,81 @@
+@model CursinhoEACH.DTO.StudentProfileDTO
 @{
-    ViewData["Title"] ??= "Detalhes do Aluno";
-    string nome = ViewData["AlunoNome"]?.ToString() ?? "--";
-    string cpf = ViewData["AlunoCpf"]?.ToString() ?? "--";
-    string email = ViewData["AlunoEmail"]?.ToString() ?? "--";
-    string telefone = ViewData["AlunoTelefone"]?.ToString() ?? string.Empty;
-    string turma = ViewData["AlunoTurma"]?.ToString() ?? "2025 Matutino"; // Turma adicionada
+    ViewData["Title"] = "Detalhes do Aluno";
+
+    // Cálculos para o Gráfico de Questões (Pizza/Conic)
+    double degCertas = (double)Model.QtdCertas / (Model.TotalQuestoes > 0 ? Model.TotalQuestoes : 1) * 360;
+    double degErradas = (double)Model.QtdErradas / (Model.TotalQuestoes > 0 ? Model.TotalQuestoes : 1) * 360;
+    // O restante é branco
+    
+    string gradientQuestoes = $"conic-gradient(#5492ca 0deg {degCertas.ToString("F0", System.Globalization.CultureInfo.InvariantCulture)}deg, #ef7b1b {degCertas.ToString("F0", System.Globalization.CultureInfo.InvariantCulture)}deg {(degCertas + degErradas).ToString("F0", System.Globalization.CultureInfo.InvariantCulture)}deg, #0b2440 {(degCertas + degErradas).ToString("F0", System.Globalization.CultureInfo.InvariantCulture)}deg 360deg)";
+
+    // Cálculos para o Gráfico de Presença
+    double degPresenca = Model.PercPresenca * 3.6; // 100% = 360deg
+    string gradientPresenca = $"conic-gradient(#5492ca 0deg {degPresenca.ToString("F0", System.Globalization.CultureInfo.InvariantCulture)}deg, #ef7b1b {degPresenca.ToString("F0", System.Globalization.CultureInfo.InvariantCulture)}deg 360deg)";
+
+    double percCertasGlobal = Model.TotalQuestoes > 0 ? (double)Model.QtdCertas/Model.TotalQuestoes * 100 : 0;
+    double percErradasGlobal = Model.TotalQuestoes > 0 ? (double)Model.QtdErradas/Model.TotalQuestoes * 100 : 0;
+    double percBrancoGlobal = Model.TotalQuestoes > 0 ? (double)Model.QtdBranco/Model.TotalQuestoes * 100 : 0;
 }
+
 <div class="mb-3">
     <a class="btn btn-outline-secondary btn-no-focus" href="/Students">Voltar</a>
 </div>
-<h4 class="mb-1">@nome</h4>
-<p class="text-muted mb-4">CPF: @cpf | Email: @email@((!string.IsNullOrWhiteSpace(telefone) ? " | Telefone: " + telefone : "")) | Turma: @turma</p>
+<h4 class="mb-1">@Model.Nome</h4>
+<p class="text-muted mb-4">CPF: @Model.CPF | Email: @Model.Email | Telefone: @Model.Telefone | Turma: @Model.Turma</p>
 
-<div class="d-flex flex-wrap justify-content-center align-items-start" style="gap:5rem;">
-    <div style="display:flex;flex-direction:column;gap:0.75rem;align-items:flex-start;">
-        <h6 class="mb-0">Desempenho (Questões)</h6>
-        <div class="d-flex align-items-start gap-4">
-            <div class="rounded-circle border position-relative"
-                 style="width:240px;height:240px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;background:conic-gradient(#5492ca 0deg 150deg,#ef7b1b 150deg 300deg,#0b2440 300deg 360deg);">
+@if (Model.TotalQuestoes > 0)
+{
+    <div class="d-flex flex-wrap justify-content-center align-items-start" style="gap:5rem;">
+        <div style="display:flex;flex-direction:column;gap:0.75rem;align-items:flex-start;">
+            <h6 class="mb-0">Desempenho (Questões)</h6>
+            <div class="d-flex align-items-start gap-4">
+                <div class="rounded-circle border position-relative"
+                     style="width:240px;height:240px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;background:@gradientQuestoes;">
+                </div>
+          
+                <div class="flex-grow-1" style="min-width:220px;">
+                    <table class="table table-sm mb-0" style="max-width:260px;">
+                        <thead>
+                            <tr><th>Categoria</th><th class="text-end">%</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><span class="badge" style="background:#5492ca">&nbsp;</span> Certas</td><td class="text-end">@percCertasGlobal.ToString("F1")%</td></tr>
+                            <tr><td><span class="badge" style="background:#ef7b1b">&nbsp;</span> Erradas</td><td class="text-end">@percErradasGlobal.ToString("F1")%</td></tr>
+                            <tr><td><span class="badge" style="background:#0b2440">&nbsp;</span> Em branco</td><td class="text-end">@percBrancoGlobal.ToString("F1")%</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="flex-grow-1" style="min-width:220px;">
-                <table class="table table-sm mb-0" style="max-width:260px;">
-                    <thead>
-                        <tr><th>Categoria</th><th class="text-end">%</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><span class="badge" style="background:#5492ca">&nbsp;</span> Certas</td><td class="text-end">41,7%</td></tr>
-                        <tr><td><span class="badge" style="background:#ef7b1b">&nbsp;</span> Erradas</td><td class="text-end">50,0%</td></tr>
-                        <tr><td><span class="badge" style="background:#0b2440">&nbsp;</span> Em branco</td><td class="text-end">8,3%</td></tr>
-                    </tbody>
-                </table>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:0.75rem;align-items:flex-start;">
+            <h6 class="mb-0">Presença (Aulas e Simulados)</h6>
+            <div class="d-flex align-items-start gap-4">
+                <div class="rounded-circle border position-relative"
+                     style="width:240px;height:240px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;background:@gradientPresenca;">
+                </div>
+                <div class="flex-grow-1" style="min-width:220px;">
+                    <table class="table table-sm mb-0" style="max-width:260px;">
+                        <thead>
+                            <tr><th>Status</th><th class="text-end">%</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><span class="badge" style="background:#5492ca">&nbsp;</span> Presente</td><td class="text-end">@Model.PercPresenca.ToString("F1")%</td></tr>
+                            <tr><td><span class="badge" style="background:#ef7b1b">&nbsp;</span> Ausente</td><td class="text-end">@Model.PercAusencia.ToString("F1")%</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:0.75rem;align-items:flex-start;">
-        <h6 class="mb-0">Presença (Aulas e Simulados)</h6>
-        <div class="d-flex align-items-start gap-4">
-            <div class="rounded-circle border position-relative"
-                 style="width:240px;height:240px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;background:conic-gradient(#5492ca 0deg 288deg,#ef7b1b 288deg 360deg);">
-            </div>
-            <div class="flex-grow-1" style="min-width:220px;">
-                <table class="table table-sm mb-0" style="max-width:260px;">
-                    <thead>
-                        <tr><th>Status</th><th class="text-end">%</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><span class="badge" style="background:#5492ca">&nbsp;</span> Presente</td><td class="text-end">80,0%</td></tr>
-                        <tr><td><span class="badge" style="background:#ef7b1b">&nbsp;</span> Ausente</td><td class="text-end">20,0%</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+}
+else
+{
+    <div class="alert alert-info mt-4 text-center">
+        <p class="mb-0">Este aluno ainda não participou de nenhum simulado.</p>
     </div>
-</div>
+}
 
 <div class="mt-5" id="alunoTabs">
     <ul class="nav nav-tabs mb-3" role="tablist" style="gap:.25rem;">
@@ -66,260 +89,112 @@
             <button type="button" class="nav-link" data-tab="assiduidade">Assiduidade</button>
         </li>
     </ul>
+    
     <div class="tab-content border rounded p-3 bg-white">
+        
         <div id="tab-materias" class="tab-pane active">
             <div class="subjects-grid">
-                <div class="subject-card">
-                    <table class="table table-sm mb-0 w-100">
-                        <thead><tr><th colspan="3" class="text-center">Matemática</th></tr></thead>
-                        <tbody>
-                            <tr><td>Total de questões</td><td class="text-end">100</td><td class="text-end">100%</td></tr>
-                            <tr><td>Questões certas</td><td class="text-end">60</td><td class="text-end">60%</td></tr>
-                            <tr><td>Questões erradas</td><td class="text-end">30</td><td class="text-end">30%</td></tr>
-                            <tr><td>Questões em branco</td><td class="text-end">10</td><td class="text-end">10%</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="subject-card">
-                    <table class="table table-sm mb-0 w-100">
-                        <thead><tr><th colspan="3" class="text-center">Português</th></tr></thead>
-                        <tbody>
-                            <tr><td>Total de questões</td><td class="text-end">100</td><td class="text-end">100%</td></tr>
-                            <tr><td>Questões certas</td><td class="text-end">70</td><td class="text-end">70%</td></tr>
-                            <tr><td>Questões erradas</td><td class="text-end">20</td><td class="text-end">20%</td></tr>
-                            <tr><td>Questões em branco</td><td class="text-end">10</td><td class="text-end">10%</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="subject-card">
-                    <table class="table table-sm mb-0 w-100">
-                        <thead><tr><th colspan="3" class="text-center">Física</th></tr></thead>
-                        <tbody>
-                            <tr><td>Total de questões</td><td class="text-end">100</td><td class="text-end">100%</td></tr>
-                            <tr><td>Questões certas</td><td class="text-end">55</td><td class="text-end">55%</td></tr>
-                            <tr><td>Questões erradas</td><td class="text-end">35</td><td class="text-end">35%</td></tr>
-                            <tr><td>Questões em branco</td><td class="text-end">10</td><td class="text-end">10%</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="subject-card">
-                    <table class="table table-sm mb-0 w-100">
-                        <thead><tr><th colspan="3" class="text-center">Química</th></tr></thead>
-                        <tbody>
-                            <tr><td>Total de questões</td><td class="text-end">100</td><td class="text-end">100%</td></tr>
-                            <tr><td>Questões certas</td><td class="text-end">58</td><td class="text-end">58%</td></tr>
-                            <tr><td>Questões erradas</td><td class="text-end">32</td><td class="text-end">32%</td></tr>
-                            <tr><td>Questões em branco</td><td class="text-end">10</td><td class="text-end">10%</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="subject-card">
-                    <table class="table table-sm mb-0 w-100">
-                        <thead><tr><th colspan="3" class="text-center">Biologia</th></tr></thead>
-                        <tbody>
-                            <tr><td>Total de questões</td><td class="text-end">100</td><td class="text-end">100%</td></tr>
-                            <tr><td>Questões certas</td><td class="text-end">66</td><td class="text-end">66%</td></tr>
-                            <tr><td>Questões erradas</td><td class="text-end">24</td><td class="text-end">24%</td></tr>
-                            <tr><td>Questões em branco</td><td class="text-end">10</td><td class="text-end">10%</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="subject-card">
-                    <table class="table table-sm mb-0 w-100">
-                        <thead><tr><th colspan="3" class="text-center">História</th></tr></thead>
-                        <tbody>
-                            <tr><td>Total de questões</td><td class="text-end">100</td><td class="text-end">100%</td></tr>
-                            <tr><td>Questões certas</td><td class="text-end">63</td><td class="text-end">63%</td></tr>
-                            <tr><td>Questões erradas</td><td class="text-end">27</td><td class="text-end">27%</td></tr>
-                            <tr><td>Questões em branco</td><td class="text-end">10</td><td class="text-end">10%</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="subject-card">
-                    <table class="table table-sm mb-0 w-100">
-                        <thead><tr><th colspan="3" class="text-center">Geografia</th></tr></thead>
-                        <tbody>
-                            <tr><td>Total de questões</td><td class="text-end">100</td><td class="text-end">100%</td></tr>
-                            <tr><td>Questões certas</td><td class="text-end">65</td><td class="text-end">65%</td></tr>
-                            <tr><td>Questões erradas</td><td class="text-end">25</td><td class="text-end">25%</td></tr>
-                            <tr><td>Questões em branco</td><td class="text-end">10</td><td class="text-end">10%</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="subject-card">
-                    <table class="table table-sm mb-0 w-100">
-                        <thead><tr><th colspan="3" class="text-center">Inglês</th></tr></thead>
-                        <tbody>
-                            <tr><td>Total de questões</td><td class="text-end">100</td><td class="text-end">100%</td></tr>
-                            <tr><td>Questões certas</td><td class="text-end">68</td><td class="text-end">68%</td></tr>
-                            <tr><td>Questões erradas</td><td class="text-end">22</td><td class="text-end">22%</td></tr>
-                            <tr><td>Questões em branco</td><td class="text-end">10</td><td class="text-end">10%</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="subject-card">
-                    <table class="table table-sm mb-0 w-100">
-                        <thead><tr><th colspan="3" class="text-center">Artes</th></tr></thead>
-                        <tbody>
-                            <tr><td>Total de questões</td><td class="text-end">100</td><td class="text-end">100%</td></tr>
-                            <tr><td>Questões certas</td><td class="text-end">75</td><td class="text-end">75%</td></tr>
-                            <tr><td>Questões erradas</td><td class="text-end">15</td><td class="text-end">15%</td></tr>
-                            <tr><td>Questões em branco</td><td class="text-end">10</td><td class="text-end">10%</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+                @if (Model.DesempenhoPorMateria.Any())
+                {
+                    @foreach (var mat in Model.DesempenhoPorMateria)
+                    {
+                        <div class="subject-card">
+                            <table class="table table-sm mb-0 w-100">
+                                <thead><tr><th colspan="3" class="text-center">@mat.Materia</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Total</td><td class="text-end">@mat.Total</td><td class="text-end"></td></tr>
+                                    <tr><td>Certas</td><td class="text-end">@mat.Certas</td><td class="text-end">@mat.PercCertas.ToString("F0")%</td></tr>
+                                    <tr><td>Erradas</td><td class="text-end">@mat.Erradas</td><td class="text-end">@mat.PercErradas.ToString("F0")%</td></tr>
+                                    <tr><td>Branco</td><td class="text-end">@mat.Branco</td><td class="text-end">@mat.PercBranco.ToString("F0")%</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted p-3">Nenhum dado de desempenho por matéria encontrado.</p>
+                }
             </div>
         </div>
+
         <div id="tab-simulados" class="tab-pane d-none">
             <div class="simulados-list">
-                <div class="simulado-item">
-                    <button type="button" class="simulado-header" aria-expanded="false">
-                        <span class="simulado-title">Simulado #1 - 10/09/2025</span>
-                        <span class="simulado-meta">Média: 50,00 | Em branco: 8,00%</span>
-                        <span class="simulado-arrow" aria-hidden="true">&#9660;</span>
-                    </button>
-                    <div class="simulado-details d-none">
-                        <h6 class="small fw-semibold mb-2">Resumo Geral</h6>
-                        <table class="table table-sm mb-3">
-                            <thead class="table-light small"><tr><th scope="col">Indicador</th><th class="text-end" scope="col">Valor</th><th class="text-end" scope="col">%</th></tr></thead>
-                            <tbody class="small">
-                                <tr><td>Total de questões</td><td class="text-end">120</td><td class="text-end">100%</td></tr>
-                                <tr><td>Questões certas</td><td class="text-end">50</td><td class="text-end">41,7%</td></tr>
-                                <tr><td>Questões erradas</td><td class="text-end">60</td><td class="text-end">50,0%</td></tr>
-                                <tr><td>Questões em branco</td><td class="text-end">10</td><td class="text-end">8,3%</td></tr>
-                            </tbody>
-                        </table>
-                        <h6 class="small fw-semibold mb-2">Por Matéria</h6>
-                        <table class="table table-sm mb-2">
-                            <thead class="table-light small"><tr><th>Matéria</th><th class="text-end">Certas</th><th class="text-end">Erradas</th><th class="text-end">Em branco</th></tr></thead>
-                            <tbody class="small">
-                                <tr><td>Matemática</td><td class="text-end">8 (40,0%)</td><td class="text-end">10 (50,0%)</td><td class="text-end">2 (10,0%)</td></tr>
-                                <tr><td>Português</td><td class="text-end">7 (41,2%)</td><td class="text-end">9 (52,9%)</td><td class="text-end">1 (5,9%)</td></tr>
-                                <tr><td>Física</td><td class="text-end">6 (33,3%)</td><td class="text-end">11 (61,1%)</td><td class="text-end">1 (5,6%)</td></tr>
-                                <tr><td>Química</td><td class="text-end">5 (27,8%)</td><td class="text-end">12 (66,7%)</td><td class="text-end">1 (5,6%)</td></tr>
-                                <tr><td>Biologia</td><td class="text-end">6 (33,3%)</td><td class="text-end">10 (55,6%)</td><td class="text-end">2 (11,1%)</td></tr>
-                                <tr><td>História</td><td class="text-end">5 (31,3%)</td><td class="text-end">10 (62,5%)</td><td class="text-end">1 (6,3%)</td></tr>
-                                <tr><td>Geografia</td><td class="text-end">5 (29,4%)</td><td class="text-end">11 (64,7%)</td><td class="text-end">1 (5,9%)</td></tr>
-                                <tr><td>Inglês</td><td class="text-end">4 (28,6%)</td><td class="text-end">9 (64,3%)</td><td class="text-end">1 (7,1%)</td></tr>
-                                <tr><td>Artes</td><td class="text-end">4 (30,8%)</td><td class="text-end">8 (61,5%)</td><td class="text-end">1 (7,7%)</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="simulado-item">
-                    <button type="button" class="simulado-header" aria-expanded="false">
-                        <span class="simulado-title">Simulado #2 - 25/10/2025</span>
-                        <span class="simulado-meta">Média: 54,00 | Em branco: 6,67%</span>
-                        <span class="simulado-arrow" aria-hidden="true">&#9660;</span>
-                    </button>
-                    <div class="simulado-details d-none">
-                        <h6 class="small fw-semibold mb-2">Resumo Geral</h6>
-                        <table class="table table-sm mb-3">
-                            <thead class="table-light small"><tr><th scope="col">Indicador</th><th class="text-end" scope="col">Valor</th><th class="text-end" scope="col">%</th></tr></thead>
-                            <tbody class="small">
-                                <tr><td>Total de questões</td><td class="text-end">120</td><td class="text-end">100%</td></tr>
-                                <tr><td>Questões certas</td><td class="text-end">54</td><td class="text-end">45,0%</td></tr>
-                                <tr><td>Questões erradas</td><td class="text-end">58</td><td class="text-end">48,3%</td></tr>
-                                <tr><td>Questões em branco</td><td class="text-end">8</td><td class="text-end">6,7%</td></tr>
-                            </tbody>
-                        </table>
-                        <h6 class="small fw-semibold mb-2">Por Matéria</h6>
-                        <table class="table table-sm mb-2">
-                            <thead class="table-light small"><tr><th>Matéria</th><th class="text-end">Certas</th><th class="text-end">Erradas</th><th class="text-end">Em branco</th></tr></thead>
-                            <tbody class="small">
-                                <tr><td>Matemática</td><td class="text-end">9 (45,0%)</td><td class="text-end">10 (50,0%)</td><td class="text-end">1 (5,0%)</td></tr>
-                                <tr><td>Português</td><td class="text-end">8 (44,4%)</td><td class="text-end">9 (50,0%)</td><td class="text-end">1 (5,6%)</td></tr>
-                                <tr><td>Física</td><td class="text-end">6 (33,3%)</td><td class="text-end">10 (55,6%)</td><td class="text-end">2 (11,1%)</td></tr>
-                                <tr><td>Química</td><td class="text-end">6 (33,3%)</td><td class="text-end">11 (61,1%)</td><td class="text-end">1 (5,6%)</td></tr>
-                                <tr><td>Biologia</td><td class="text-end">7 (38,9%)</td><td class="text-end">10 (55,6%)</td><td class="text-end">1 (5,6%)</td></tr>
-                                <tr><td>História</td><td class="text-end">6 (37,5%)</td><td class="text-end">9 (56,3%)</td><td class="text-end">1 (6,3%)</td></tr>
-                                <tr><td>Geografia</td><td class="text-end">6 (33,3%)</td><td class="text-end">11 (61,1%)</td><td class="text-end">1 (5,6%)</td></tr>
-                                <tr><td>Inglês</td><td class="text-end">3 (25,0%)</td><td class="text-end">8 (66,7%)</td><td class="text-end">1 (8,3%)</td></tr>
-                                <tr><td>Artes</td><td class="text-end">3 (27,3%)</td><td class="text-end">7 (63,6%)</td><td class="text-end">1 (9,1%)</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="simulado-item">
-                    <button type="button" class="simulado-header" aria-expanded="false">
-                        <span class="simulado-title">Simulado #3 - 05/11/2025</span>
-                        <span class="simulado-meta">Média: 48,00 | Em branco: 9,17%</span>
-                        <span class="simulado-arrow" aria-hidden="true">&#9660;</span>
-                    </button>
-                    <div class="simulado-details d-none">
-                        <h6 class="small fw-semibold mb-2">Resumo Geral</h6>
-                        <table class="table table-sm mb-3">
-                            <thead class="table-light small"><tr><th scope="col">Indicador</th><th class="text-end" scope="col">Valor</th><th class="text-end" scope="col">%</th></tr></thead>
-                            <tbody class="small">
-                                <tr><td>Total de questões</td><td class="text-end">120</td><td class="text-end">100%</td></tr>
-                                <tr><td>Questões certas</td><td class="text-end">48</td><td class="text-end">40,0%</td></tr>
-                                <tr><td>Questões erradas</td><td class="text-end">61</td><td class="text-end">50,8%</td></tr>
-                                <tr><td>Questões em branco</td><td class="text-end">11</td><td class="text-end">9,2%</td></tr>
-                            </tbody>
-                        </table>
-                        <h6 class="small fw-semibold mb-2">Por Matéria</h6>
-                        <table class="table table-sm mb-2">
-                            <thead class="table-light small"><tr><th>Matéria</th><th class="text-end">Certas</th><th class="text-end">Erradas</th><th class="text-end">Em branco</th></tr></thead>
-                            <tbody class="small">
-                                <tr><td>Matemática</td><td class="text-end">7 (35,0%)</td><td class="text-end">11 (55,0%)</td><td class="text-end">2 (10,0%)</td></tr>
-                                <tr><td>Português</td><td class="text-end">6 (33,3%)</td><td class="text-end">10 (55,6%)</td><td class="text-end">2 (11,1%)</td></tr>
-                                <tr><td>Física</td><td class="text-end">5 (27,8%)</td><td class="text-end">11 (61,1%)</td><td class="text-end">2 (11,1%)</td></tr>
-                                <tr><td>Química</td><td class="text-end">5 (27,8%)</td><td class="text-end">12 (66,7%)</td><td class="text-end">1 (5,6%)</td></tr>
-                                <tr><td>Biologia</td><td class="text-end">6 (35,3%)</td><td class="text-end">10 (58,8%)</td><td class="text-end">1 (5,9%)</td></tr>
-                                <tr><td>História</td><td class="text-end">6 (33,3%)</td><td class="text-end">11 (61,1%)</td><td class="text-end">1 (5,6%)</td></tr>
-                                <tr><td>Geografia</td><td class="text-end">4 (25,0%)</td><td class="text-end">10 (62,5%)</td><td class="text-end">2 (12,5%)</td></tr>
-                                <tr><td>Inglês</td><td class="text-end">5 (33,3%)</td><td class="text-end">9 (60,0%)</td><td class="text-end">1 (6,7%)</td></tr>
-                                <tr><td>Artes</td><td class="text-end">4 (30,8%)</td><td class="text-end">8 (61,5%)</td><td class="text-end">1 (7,7%)</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                @if (Model.HistoricoSimulados.Any())
+                {
+                    @foreach(var sim in Model.HistoricoSimulados)
+                    {
+                        <div class="simulado-item">
+                            <button type="button" class="simulado-header" aria-expanded="false">
+                                <span class="simulado-title">@sim.Titulo - @sim.Data.ToString("dd/MM/yyyy")</span>
+                                <span class="simulado-meta">Média: @sim.Media.ToString("F2") | Acertos: @sim.Acertos</span>
+                                <span class="simulado-arrow" aria-hidden="true">&#9660;</span>
+                            </button>
+                            <div class="simulado-details d-none">
+                                <h6 class="small fw-semibold mb-2">Resumo Geral</h6>
+                                <table class="table table-sm mb-3">
+                                    <thead class="table-light small"><tr><th scope="col">Indicador</th><th class="text-end" scope="col">Valor</th><th class="text-end" scope="col">%</th></tr></thead>
+                                    <tbody class="small">
+                                        <tr><td>Total de questões</td><td class="text-end">@sim.TotalQuestoes</td><td class="text-end"></td></tr>
+                                        <tr><td>Questões certas</td><td class="text-end">@sim.Acertos</td><td class="text-end">@((sim.TotalQuestoes > 0 ? (double)sim.Acertos/sim.TotalQuestoes*100 : 0).ToString("F1"))%</td></tr>
+                                        <tr><td>Questões erradas</td><td class="text-end">@sim.Erros</td><td class="text-end">@((sim.TotalQuestoes > 0 ? (double)sim.Erros/sim.TotalQuestoes*100 : 0).ToString("F1"))%</td></tr>
+                                        <tr><td>Questões em branco</td><td class="text-end">@sim.Branco</td><td class="text-end">@((sim.TotalQuestoes > 0 ? (double)sim.Branco/sim.TotalQuestoes*100 : 0).ToString("F1"))%</td></tr>
+                                    </tbody>
+                                </table>
+                                <h6 class="small fw-semibold mb-2">Por Matéria</h6>
+                                <table class="table table-sm mb-2">
+                                    <thead class="table-light small"><tr><th>Matéria</th><th class="text-end">Certas</th><th class="text-end">Erradas</th><th class="text-end">Em branco</th></tr></thead>
+                                    <tbody class="small">
+                                        @foreach(var m in sim.Materias)
+                                        {
+                                            <tr>
+                                                <td>@m.Materia</td>
+                                                <td class="text-end">@m.Certas (@m.PercCertas.ToString("F1")%)</td>
+                                                <td class="text-end">@m.Erradas (@m.PercErradas.ToString("F1")%)</td>
+                                                <td class="text-end">@m.Branco (@m.PercBranco.ToString("F1")%)</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted p-3">Nenhum simulado realizado.</p>
+                }
             </div>
         </div>
+
         <div id="tab-assiduidade" class="tab-pane d-none">
-            <div class="d-flex flex-wrap gap-3 mb-3 small">
-                <div class="border rounded p-2 bg-light"><strong>Presença Aulas:</strong> 78/100 (78,0%)</div>
-                <div class="border rounded p-2 bg-light"><strong>Presença Simulados:</strong> 8/10 (80,0%)</div>
-            </div>
-            <!-- Botões de agrupamento removidos conforme solicitação -->
             <div class="table-responsive">
                 <table class="table table-sm mb-0" id="assiduidadeTabela">
                     <thead class="table-light small">
                         <tr>
                             <th>Matéria</th>
                             <th>Professor</th>
-                            <th class="text-end">Presença</th>
+                            <th class="text-end">Presença (Aulas)</th>
                             <th class="text-end">%</th>
                         </tr>
                     </thead>
                     <tbody class="small">
-                        <tr>
-                            <td>Matemática</td><td>Ana Silva</td><td class="text-end">12/15</td><td class="text-end">80,0%</td>
-                        </tr>
-                        <tr>
-                            <td>Português</td><td>Carlos Souza</td><td class="text-end">14/16</td><td class="text-end">87,5%</td>
-                        </tr>
-                        <tr>
-                            <td>Física</td><td>Marina Lopes</td><td class="text-end">10/14</td><td class="text-end">71,4%</td>
-                        </tr>
-                        <tr>
-                            <td>Química</td><td>Roberto Lima</td><td class="text-end">11/15</td><td class="text-end">73,3%</td>
-                        </tr>
-                        <tr>
-                            <td>Biologia</td><td>Fernanda Alves</td><td class="text-end">13/15</td><td class="text-end">86,7%</td>
-                        </tr>
-                        <tr>
-                            <td>História</td><td>João Pereira</td><td class="text-end">12/16</td><td class="text-end">75,0%</td>
-                        </tr>
-                        <tr>
-                            <td>Geografia</td><td>Paula Castro</td><td class="text-end">13/16</td><td class="text-end">81,3%</td>
-                        </tr>
-                        <tr>
-                            <td>Inglês</td><td>Daniel Brito</td><td class="text-end">14/15</td><td class="text-end">93,3%</td>
-                        </tr>
-                        <tr>
-                            <td>Artes</td><td>Helena Nunes</td><td class="text-end">11/13</td><td class="text-end">84,6%</td>
-                        </tr>
+                        @if(Model.AssiduidadePorMateria.Any())
+                        {
+                            @foreach(var ass in Model.AssiduidadePorMateria)
+                            {
+                                <tr>
+                                    <td>@ass.Materia</td>
+                                    <td>@ass.Professor</td>
+                                    <td class="text-end">@ass.Presencas / @ass.AulasDadas</td>
+                                    <td class="text-end">@ass.Porcentagem.ToString("F1")%</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                             <tr><td colspan="4" class="text-center text-muted">Sem registros de aulas detalhados por matéria.</td></tr>
+                        }
                     </tbody>
                 </table>
             </div>
@@ -336,6 +211,7 @@
         simulados: document.getElementById('tab-simulados'),
         assiduidade: document.getElementById('tab-assiduidade')
     };
+
     buttons.forEach(btn => {
         btn.addEventListener('click', () => {
             buttons.forEach(b => b.classList.remove('active'));
@@ -360,7 +236,6 @@
     items.forEach(item => {
         const header = item.querySelector('.simulado-header');
         const details = item.querySelector('.simulado-details');
-        const arrow = item.querySelector('.simulado-arrow');
         if(!header || !details) return;
         header.addEventListener('click', () => {
             const open = item.classList.toggle('open');
