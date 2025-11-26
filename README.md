@@ -32,6 +32,10 @@ Sistema em **.NET Core MVC** para auxiliar o Cursinho Popular EACH – USP no co
     ```bash
         dotnet dev-certs https --trust
     ```
+    - Alterar a string de conexão com o banco de dados, no arquivo appsettings.json, para as informações do seu PostgreSQL (senha, host, etc)
+    ```
+        Host=localhost;Port=5432;Database=postgres;Username=postgres;Password=1234;SearchPath=cursinho_each
+    ```
     - Dar build na aplicação:
     ```bash
         dotnet build
