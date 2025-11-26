@@ -2,8 +2,6 @@ CREATE SCHEMA IF NOT EXISTS cursinho_each;
 
 SET SEARCH_PATH = cursinho_each;
 
--- TO DO evento_x_materia
-
 CREATE TABLE IF NOT EXISTS turma(
 	ano INTEGER NOT NULL,
 	periodo CHAR(1) NOT NULL CHECK(periodo in ('M', 'V', 'N')),
@@ -27,7 +25,7 @@ CREATE TABLE IF NOT EXISTS aluno(
 	matriculado BOOLEAN DEFAULT TRUE,
 	desligado BOOLEAN, ------------------------------------ NECESSÁRIO? NÃO É REDUNDANTE? TEM DIFERENÇA ENTRE NOT MATRICULADO E DESLIGADO?
 	desligado_motivo VARCHAR(100), ------------------------ CRIAR CHECK PARA OBRIGAR PREENCHIMENTO EM CASO DE DESLIGAMENTO?
-	representante_legal CHAR(11) NOT NULL, ----------------- PRECISA CORRIGIR NO DER
+	representante_legal  CHAR(11) NOT NULL, ----------------- PRECISA CORRIGIR NO DER
 	turma_ano INTEGER NOT NULL,
 	turma_periodo CHAR(1) NOT NULL, ----------------------------------------- UM ALUNO SÓ PODE PARTICIPAR UM ANO?
 	PRIMARY KEY (cpf),
@@ -40,7 +38,7 @@ CREATE TABLE IF NOT EXISTS professor(
 	cpf CHAR(11) NOT NULL,
 	tipo CHAR(1) NOT NULL CHECK(tipo IN ('R', 'M', 'P')),
 	PRIMARY KEY (cpf),
-	FOREIGN KEY (cpf) REFERENCES pessoa(cpf),
+	FOREIGN KEY (cpf) REFERENCES pessoa(cpf)
 );
 
 CREATE TABLE IF NOT EXISTS materia(
@@ -53,7 +51,7 @@ CREATE TABLE IF NOT EXISTS prova(
 	id BIGSERIAL NOT NULL,
 	nome VARCHAR(100) NOT NULL,
 	fase INTEGER,
-	tipo CHAR(1) CHECK(tipo in ('A', 'B', 'C')), -------------------------------- QUAIS TIPOS?
+	tipo CHAR(1) CHECK(tipo in ('ENEM', 'FUVEST', 'UNICAMP', 'OUTRAS')), -------------------------------- QUAIS TIPOS?
 	PRIMARY KEY (id)
 );
 
@@ -62,10 +60,18 @@ CREATE TABLE IF NOT EXISTS evento(
 	data DATE,
 	hora_inicio TIME, -------------------------------NAO É REDUNDATE? NAO PODERIA SER DATA_HORA NO CAMPO ANTERIOR?
 	duracao_minutos INTEGER,
-	tipo CHAR(1) CHECK(tipo in ('A', 'B', 'C')), ---------------------------------------QUAIS TIPOS?
+	tipo CHAR(1) CHECK(tipo in ('A', 'S', 'O')), --------------------------------------- A- AULA, S- SIMULADO, O- OUTRO
 	prova_id BIGINT,
 	PRIMARY KEY (id),
 	FOREIGN KEY (prova_id) REFERENCES prova(id)
+);
+
+CREATE TABLE IF NOT EXISTS 	evento_materia (
+	evento_id BIGINT NOT NULL,
+	materia_nome VARCHAR(50) NOT NULL,
+	PRIMARY KEY (evento_id, materia_nome),
+	FOREIGN KEY (evento_id) REFERENCES evento(id),
+	FOREIGN KEY (materia_nome) REFERENCES materia(nome)
 );
 
 CREATE TABLE IF NOT EXISTS questao(
@@ -91,6 +97,7 @@ CREATE TABLE IF NOT EXISTS professor_materia_turma (
 CREATE TABLE IF NOT EXISTS aluno_evento ( -- chamar de presenças? ou aluno_evento mesmo?
 	aluno_cpf CHAR(11) NOT NULL,
 	evento_id BIGINT NOT NULL,
+	presente BOOLEAN DEFAULT FALSE,
 	PRIMARY KEY (aluno_cpf, evento_id),
 	FOREIGN KEY (aluno_cpf) REFERENCES aluno(cpf),
 	FOREIGN KEY (evento_id) REFERENCES evento(id)
@@ -115,4 +122,13 @@ CREATE TABLE IF NOT EXISTS questao_materia (
 	PRIMARY KEY (questao_prova_id, questao_numero, materia_nome),
 	FOREIGN KEY (questao_prova_id, questao_numero) REFERENCES questao(prova_id, numero),
 	FOREIGN KEY (materia_nome) REFERENCES materia(nome)
+);
+
+CREATE TABLE IF NOT EXISTS evento_turma (
+    evento_id BIGINT NOT NULL,
+    turma_ano INTEGER NOT NULL,
+    turma_periodo CHAR(1) NOT NULL,
+    PRIMARY KEY (evento_id, turma_ano, turma_periodo),
+	FOREIGN KEY (turma_ano, turma_periodo) REFERENCES turma(ano, periodo),
+	FOREIGN KEY (evento_id) REFERENCES evento(id)
 );
