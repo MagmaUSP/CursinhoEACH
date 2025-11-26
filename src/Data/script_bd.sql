@@ -23,9 +23,8 @@ CREATE TABLE IF NOT EXISTS aluno(
 	cpf CHAR(11) NOT NULL,
 	ano_escolar INTEGER,
 	matriculado BOOLEAN DEFAULT TRUE,
-	desligado BOOLEAN, ------------------------------------ NECESSÁRIO? NÃO É REDUNDANTE? TEM DIFERENÇA ENTRE NOT MATRICULADO E DESLIGADO?
-	desligado_motivo VARCHAR(100), ------------------------ CRIAR CHECK PARA OBRIGAR PREENCHIMENTO EM CASO DE DESLIGAMENTO?
-	representante_legal  CHAR(11) NOT NULL, ----------------- PRECISA CORRIGIR NO DER
+	desligado_motivo VARCHAR(100),
+	representante_legal  CHAR(11) NOT NULL,
 	turma_ano INTEGER NOT NULL,
 	turma_periodo CHAR(1) NOT NULL, ----------------------------------------- UM ALUNO SÓ PODE PARTICIPAR UM ANO?
 	PRIMARY KEY (cpf),
@@ -51,16 +50,16 @@ CREATE TABLE IF NOT EXISTS prova(
 	id BIGSERIAL NOT NULL,
 	nome VARCHAR(100) NOT NULL,
 	fase INTEGER,
-	tipo CHAR(1) CHECK(tipo in ('ENEM', 'FUVEST', 'UNICAMP', 'OUTRAS')), -------------------------------- QUAIS TIPOS?
+	tipo CHAR(1) CHECK(tipo in ('ENEM', 'FUVEST', 'UNICAMP', 'OUTRAS')),
 	PRIMARY KEY (id)
 );
 
 CREATE TABLE IF NOT EXISTS evento(
 	id BIGSERIAL NOT NULL,
 	data DATE,
-	hora_inicio TIME, -------------------------------NAO É REDUNDATE? NAO PODERIA SER DATA_HORA NO CAMPO ANTERIOR?
+	hora_inicio TIME,
 	duracao_minutos INTEGER,
-	tipo CHAR(1) CHECK(tipo in ('A', 'S', 'O')), --------------------------------------- A- AULA, S- SIMULADO, O- OUTRO
+	tipo CHAR(1) CHECK(tipo in ('A', 'S', 'O')),
 	prova_id BIGINT,
 	PRIMARY KEY (id),
 	FOREIGN KEY (prova_id) REFERENCES prova(id)
@@ -77,7 +76,7 @@ CREATE TABLE IF NOT EXISTS 	evento_materia (
 CREATE TABLE IF NOT EXISTS questao(
 	prova_id BIGINT NOT NULL,
 	numero INTEGER NOT NULL,
-	enunciado VARCHAR(500) NOT NULL, ------------------------- criei essa bomba. faz sentido?
+	enunciado VARCHAR(500) NOT NULL,
 	gabarito VARCHAR(500) NOT NULL,
 	PRIMARY KEY (prova_id, numero),
 	FOREIGN KEY (prova_id) REFERENCES prova(id)
@@ -94,7 +93,7 @@ CREATE TABLE IF NOT EXISTS professor_materia_turma (
 	FOREIGN KEY (turma_ano, turma_periodo) REFERENCES turma(ano, periodo)
 );
 
-CREATE TABLE IF NOT EXISTS aluno_evento ( -- chamar de presenças? ou aluno_evento mesmo?
+CREATE TABLE IF NOT EXISTS aluno_evento (
 	aluno_cpf CHAR(11) NOT NULL,
 	evento_id BIGINT NOT NULL,
 	presente BOOLEAN DEFAULT FALSE,
@@ -108,7 +107,7 @@ CREATE TABLE IF NOT EXISTS aluno_questao (
 	questao_prova_id BIGINT NOT NULL,
 	questao_numero INTEGER NOT NULL,
 	tempo_resposta_seg INTEGER NOT NULL,
-	alternativa CHAR(1) NOT NULL CHECK(alternativa IN ('A', 'B', 'C', 'D', 'E')), -------------------------------- nunca teremos dissertativa nesta versão?
+	alternativa CHAR(1) NOT NULL CHECK(alternativa IN ('A', 'B', 'C', 'D', 'E')),
 	PRIMARY KEY (aluno_cpf, questao_prova_id, questao_numero),
 	FOREIGN KEY (aluno_cpf) REFERENCES aluno(cpf),
 	FOREIGN KEY (questao_prova_id, questao_numero) REFERENCES questao(prova_id, numero)
