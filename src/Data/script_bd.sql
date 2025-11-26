@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS prova(
 	id BIGSERIAL NOT NULL,
 	nome VARCHAR(100) NOT NULL,
 	fase INTEGER,
-	tipo CHAR(1) CHECK(tipo in ('A', 'B', 'C')), -------------------------------- QUAIS TIPOS?
+	tipo CHAR(1) CHECK(tipo in ('ENEM', 'FUVEST', 'UNICAMP', 'OUTRAS')), -------------------------------- QUAIS TIPOS?
 	PRIMARY KEY (id)
 );
 
