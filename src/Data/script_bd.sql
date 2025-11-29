@@ -1,10 +1,10 @@
 CREATE SCHEMA IF NOT EXISTS cursinho_each;
 
-SET SEARCH_PATH = cursinho_each;
+SET SEARCH_PATH TO cursinho_each;
 
 CREATE TABLE IF NOT EXISTS turma(
 	ano INTEGER NOT NULL,
-	periodo CHAR(1) NOT NULL CHECK(periodo in ('M', 'V', 'N')),
+	periodo CHAR(1) NOT NULL CHECK(periodo in ('M', 'V', 'N')), -- Matutino, Vespertino, Noturno
 	capacidade INTEGER,
 	PRIMARY KEY (ano, periodo)
 );
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS aluno(
 	desligado_motivo VARCHAR(100),
 	representante_legal  CHAR(11) NOT NULL,
 	turma_ano INTEGER NOT NULL,
-	turma_periodo CHAR(1) NOT NULL, ----------------------------------------- UM ALUNO SÓ PODE PARTICIPAR UM ANO?
+	turma_periodo CHAR(1) NOT NULL,
 	PRIMARY KEY (cpf),
 	FOREIGN KEY (cpf) REFERENCES pessoa(cpf),
 	FOREIGN KEY (representante_legal) REFERENCES pessoa(cpf),
@@ -35,14 +35,14 @@ CREATE TABLE IF NOT EXISTS aluno(
 
 CREATE TABLE IF NOT EXISTS professor(
 	cpf CHAR(11) NOT NULL,
-	tipo CHAR(1) NOT NULL CHECK(tipo IN ('R', 'M', 'P')),
+	tipo CHAR(1) NOT NULL CHECK(tipo IN ('R', 'M', 'P')), -- Regular, Monitor, Plantonista
 	PRIMARY KEY (cpf),
 	FOREIGN KEY (cpf) REFERENCES pessoa(cpf)
 );
 
 CREATE TABLE IF NOT EXISTS materia(
 	nome VARCHAR(50) NOT NULL,
-	area VARCHAR(50),
+	area CHAR(1) CHECK(area in ('H', 'E', 'N', 'L', 'O')), -- Humanas, Exatas, Natureza, Linguagens, Outros
 	PRIMARY KEY (nome)
 );
 
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS prova(
 	id BIGSERIAL NOT NULL,
 	nome VARCHAR(100) NOT NULL,
 	fase INTEGER,
-	tipo CHAR(1) CHECK(tipo in ('ENEM', 'FUVEST', 'UNICAMP', 'OUTRAS')),
+	tipo CHAR(1) CHECK(tipo in ('E', 'F', 'U', 'O')), -- Enem, FUVEST, UNICAMP, Outros
 	PRIMARY KEY (id)
 );
 
@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS evento(
 	data DATE,
 	hora_inicio TIME,
 	duracao_minutos INTEGER,
-	tipo CHAR(1) CHECK(tipo in ('A', 'S', 'O')),
+	tipo CHAR(1) CHECK(tipo in ('A', 'S', 'O')), -- Aula, Simulado, Outros
 	prova_id BIGINT,
 	PRIMARY KEY (id),
 	FOREIGN KEY (prova_id) REFERENCES prova(id)
@@ -107,7 +107,7 @@ CREATE TABLE IF NOT EXISTS aluno_questao (
 	questao_prova_id BIGINT NOT NULL,
 	questao_numero INTEGER NOT NULL,
 	tempo_resposta_seg INTEGER NOT NULL,
-	alternativa CHAR(1) NOT NULL CHECK(alternativa IN ('A', 'B', 'C', 'D', 'E')),
+	alternativa CHAR(1) NOT NULL CHECK(alternativa IN ('A', 'B', 'C', 'D', 'E')), 
 	PRIMARY KEY (aluno_cpf, questao_prova_id, questao_numero),
 	FOREIGN KEY (aluno_cpf) REFERENCES aluno(cpf),
 	FOREIGN KEY (questao_prova_id, questao_numero) REFERENCES questao(prova_id, numero)

@@ -13,7 +13,7 @@ public class StudentService
     }
 
     // --- DASHBOARD ---
-    public async Task<DashboardSummaryDTO> GetDashboardSummaryAsync(string cpf, string nome, string email)
+    public async Task<DashboardSummaryDTO> GetDashboardSummaryAsync(string cpf, string nome, string email, int ano, string periodo)
     {
         if (_conn.State != System.Data.ConnectionState.Open) await _conn.OpenAsync();
 
@@ -30,7 +30,9 @@ public class StudentService
                  WHERE a2.matriculado = TRUE
                  AND (@Cpf IS NULL OR p2.cpf LIKE @Cpf)
                  AND (@Nome IS NULL OR p2.nome ILIKE @Nome)
-                 AND (@Email IS NULL OR p2.email ILIKE @Email)) as TotalOportunidades,
+                 AND (@Email IS NULL OR p2.email ILIKE @Email)
+                 AND (@Ano IS NULL OR a2.turma_ano = @Ano)
+                 AND (@Periodo IS NULL OR a2.turma_periodo ILIKE @Periodo)) as TotalOportunidades,
 
                 (SELECT COUNT(*) FROM cursinho_each.aluno_evento ae
                  JOIN cursinho_each.aluno a3 ON ae.aluno_cpf = a3.cpf
@@ -38,7 +40,9 @@ public class StudentService
                  WHERE ae.presente = TRUE
                  AND (@Cpf IS NULL OR p3.cpf LIKE @Cpf)
                  AND (@Nome IS NULL OR p3.nome ILIKE @Nome)
-                 AND (@Email IS NULL OR p3.email ILIKE @Email)) as TotalPresencas
+                 AND (@Email IS NULL OR p3.email ILIKE @Email)
+                 AND (@Ano IS NULL OR a3.turma_ano = @Ano)
+                 AND (@Periodo IS NULL OR a3.turma_periodo ILIKE @Periodo)) as TotalPresencas
 
             FROM cursinho_each.aluno a
             JOIN cursinho_each.pessoa p ON a.cpf = p.cpf
@@ -49,12 +53,16 @@ public class StudentService
         if (!string.IsNullOrEmpty(cpf)) sb.Append(" AND p.cpf LIKE @Cpf");
         if (!string.IsNullOrEmpty(nome)) sb.Append(" AND p.nome ILIKE @Nome");
         if (!string.IsNullOrEmpty(email)) sb.Append(" AND p.email ILIKE @Email");
+        if (ano != 0) sb.Append(" AND a.turma_ano = @Ano");
+        if (!string.IsNullOrEmpty(periodo)) sb.Append(" AND a.turma_periodo = @Periodo");
 
         var rawParams = new 
         { 
             Cpf = string.IsNullOrEmpty(cpf) ? null : $"%{cpf}%", 
             Nome = string.IsNullOrEmpty(nome) ? null : $"%{nome}%", 
-            Email = string.IsNullOrEmpty(email) ? null : $"%{email}%" 
+            Email = string.IsNullOrEmpty(email) ? null : $"%{email}%",
+            Ano = ano == 0 ? (int?)null : ano,
+            Periodo = string.IsNullOrEmpty(periodo) ? null : $"%{periodo}%"
         };
 
         var result = await _conn.QuerySingleOrDefaultAsync<dynamic>(sb.ToString(), rawParams);
@@ -73,7 +81,7 @@ public class StudentService
     }
 
     // --- LISTAGEM (Index) ---
-    public async Task<IEnumerable<StudentSummaryDTO>> GetAllStudentsAsync(string cpf, string nome, string email)
+    public async Task<IEnumerable<StudentSummaryDTO>> GetAllStudentsAsync(string cpf, string nome, string email, int ano, string periodo)
     {
         if (_conn.State != System.Data.ConnectionState.Open) await _conn.OpenAsync();
 
@@ -99,12 +107,17 @@ public class StudentService
         if (!string.IsNullOrEmpty(cpf)) sql.Append(" AND p.cpf LIKE @Cpf");
         if (!string.IsNullOrEmpty(nome)) sql.Append(" AND p.nome ILIKE @Nome");
         if (!string.IsNullOrEmpty(email)) sql.Append(" AND p.email ILIKE @Email");
+        if (ano != 0) sql.Append(" AND a.turma_ano = @Ano");
+        if (!string.IsNullOrEmpty(periodo)) sql.Append(" AND a.turma_periodo = @Periodo");
+
         sql.Append(" ORDER BY p.nome");
 
         var rawData = await _conn.QueryAsync<dynamic>(sql.ToString(), new { 
             Cpf = $"%{cpf}%", 
             Nome = $"%{nome}%", 
-            Email = $"%{email}%" 
+            Email = $"%{email}%",
+            Ano = ano == 0 ? (int?)null : ano,
+            Periodo = string.IsNullOrEmpty(periodo) ? null : $"%{periodo}%"
         });
 
         var list = new List<StudentSummaryDTO>();
@@ -118,8 +131,8 @@ public class StudentService
             list.Add(new StudentSummaryDTO
             {
                 CPF = row.cpf, Nome = row.nome, Email = row.email,
-                IAA = tA > 0 ? ((double)pA / tA) * 100 : 100,
-                IAS = tS > 0 ? ((double)pS / tS) * 100 : 100
+                IAA = tA > 0 ? ((double)pA / tA) * 100 : 0,
+                IAS = tS > 0 ? ((double)pS / tS) * 100 : 0
             });
         }
         return list;
@@ -202,10 +215,7 @@ public class StudentService
             AND (
                 -- Só mostra se o aluno estava PRESENTE
                 EXISTS (SELECT 1 FROM cursinho_each.aluno_evento ae WHERE ae.evento_id = e.id AND ae.aluno_cpf = @Cpf AND ae.presente = TRUE)
-                OR
-                -- OU se ele respondeu alguma questão (segurança)
-                EXISTS (SELECT 1 FROM cursinho_each.aluno_questao aq WHERE aq.questao_prova_id = p.id AND aq.aluno_cpf = @Cpf)
-            )
+            )S
             ORDER BY e.data DESC";
 
         var simulados = await _conn.QueryAsync<MockExamHistoryDTO>(sqlSimulados, new { Cpf = cpf });

@@ -17,7 +17,7 @@ public class ClassDTO
 
     public string Key => $"{Ano}{Periodo}"; // Ex: 2025M
 
-    public int OcupacaoPorcentagem => Capacidade > 0 ? (int)((double)Matriculados / Capacidade * 100) : 0;
+    public int OcupacaoPorcentagem => Capacidade > 0 ? (int)(((double)Matriculados / Capacidade) * 100) : 0;
 }
 
 public class ClassDetailsDTO : ClassDTO
@@ -37,5 +37,14 @@ public class ClassTeacherDTO
     public string CPF { get; set; }
     public string Nome { get; set; }
     public string Materia { get; set; }
-    public string Area { get; set; } // Ex: Exatas, Humanas (Pode ser derivado da matéria)
+    public string Area { get; set; }
+    public string AreaExtenso => Area switch 
+    {
+        "H" => "Humanas",
+        "E" => "Exatas",
+        "N" => "Natureza",
+        "L" => "Linguagens",
+        "O" => "Outros",
+        _ => Area
+    };
 }

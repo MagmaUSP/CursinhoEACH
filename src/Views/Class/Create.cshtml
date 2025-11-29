@@ -25,7 +25,7 @@
                 </div>
                 <div class="col-12 col-md-4">
                     <label asp-for="Capacidade" class="form-label">Capacidade <span class="text-danger">*</span></label>
-                    <input asp-for="Capacidade" type="number" class="form-control" min="10" max="100" required value="35" />
+                    <input asp-for="Capacidade" type="number" class="form-control" min="1" max="100" required value="35" />
                 </div>
             </div>
             <div class="text-danger">@Html.ValidationSummary(true)</div>

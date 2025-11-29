@@ -107,7 +107,7 @@ public class ClassService
         // Se a matéria já existe, ele não faz nada (ON CONFLICT DO NOTHING)
         var sqlMateria = @"
             INSERT INTO cursinho_each.materia (nome, area) 
-            VALUES (@Materia, 'Geral') 
+            VALUES (@Materia, 'O') 
             ON CONFLICT (nome) DO NOTHING;";
         
         await _conn.ExecuteAsync(sqlMateria, new { Materia = materia });

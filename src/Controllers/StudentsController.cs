@@ -14,13 +14,13 @@ namespace CursinhoEACH.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index(string cpf, string nome, string email)
+        public async Task<IActionResult> Index(string cpf, string nome, string email, int ano, string periodo)
         {
             // 1. Busca os dados de sumário (Para os gráficos do topo)
-            var dashboardData = await _studentService.GetDashboardSummaryAsync(cpf, nome, email);
+            var dashboardData = await _studentService.GetDashboardSummaryAsync(cpf, nome, email, ano, periodo);
 
             // 2. Busca a lista de alunos (Para a tabela)
-            var studentsList = await _studentService.GetAllStudentsAsync(cpf, nome, email);
+            var studentsList = await _studentService.GetAllStudentsAsync(cpf, nome, email, ano, periodo);
             
             // 3. Monta o ViewModel
             var viewModel = new StudentsIndexViewModel
@@ -33,6 +33,8 @@ namespace CursinhoEACH.Controllers
             ViewData["FiltroCpf"] = cpf;
             ViewData["FiltroNome"] = nome;
             ViewData["FiltroEmail"] = email;
+            ViewData["FiltroAno"] = ano;
+            ViewData["FiltroPeriodo"] = periodo;
 
             return View(viewModel);
         }

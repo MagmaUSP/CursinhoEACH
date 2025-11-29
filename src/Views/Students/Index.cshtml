@@ -95,6 +95,14 @@
             <label for="fEmail" class="form-label">Email</label>
 			<input type="text" class="form-control" id="fEmail" name="email" value="@ViewData["FiltroEmail"]" maxlength="100" />
         </div>
+        <div class="col-12 col-md-3">
+            <label for="fTurmaPeriodo" class="form-label">Periodo</label>
+			<input type="text" class="form-control" id="fTurmaPeriodo" name="turmaPeriodo" value="@ViewData["FiltroTurmaPeriodo"]" maxlength="20" />
+        </div>
+        <div class="col-12 col-md-3">
+            <label for="fTurmaAno" class="form-label">Ano</label>
+			<input type="number" class="form-control" id="fTurmaAno" name="turmaAno" value="@ViewData["FiltroTurmaAno"]" />
+        </div>
         <div class="col-12 col-md-3 d-flex gap-2 justify-content-end">
 			<button type="submit" id="btnFiltrarAlunos" class="btn text-white btn-brand btn-no-focus">Filtrar</button>
             <button type="button" id="btnLimparAlunos" class="btn btn-outline-secondary btn-no-focus">Limpar</button>
@@ -149,6 +157,8 @@
 				document.getElementById('fCpf').value='';
 				document.getElementById('fNome').value='';
 				document.getElementById('fEmail').value='';
+				document.getElementById('fTurmaPeriodo').value='';
+				document.getElementById('fTurmaAno').value=0;
                 document.forms[0].submit();
 			});
 		}
