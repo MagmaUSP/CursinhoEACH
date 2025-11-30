@@ -215,7 +215,7 @@ public class StudentService
             AND (
                 -- Só mostra se o aluno estava PRESENTE
                 EXISTS (SELECT 1 FROM cursinho_each.aluno_evento ae WHERE ae.evento_id = e.id AND ae.aluno_cpf = @Cpf AND ae.presente = TRUE)
-            )S
+            )
             ORDER BY e.data DESC";
 
         var simulados = await _conn.QueryAsync<MockExamHistoryDTO>(sqlSimulados, new { Cpf = cpf });
