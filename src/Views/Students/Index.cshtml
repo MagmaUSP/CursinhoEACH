@@ -20,9 +20,10 @@
     double pAusencia = Model.Dashboard.PercAusencia;
     double degPresenca = pPresenca * 3.6;
 
-    string bgPresenca = Model.Dashboard.TotalOportunidadesPresenca > 0
+	string bgPresenca = Model.Dashboard.TotalOportunidadesPresenca > 0
         ? $"conic-gradient(#5492ca 0deg {degPresenca.ToString("F0", System.Globalization.CultureInfo.InvariantCulture)}deg, #ef7b1b {degPresenca.ToString("F0", System.Globalization.CultureInfo.InvariantCulture)}deg 360deg)"
         : "#e9ecef"; // Cinza claro
+	int currentYear = DateTime.UtcNow.Year;
 }
 
 <div class="mb-4" id="chartsWrapper">
@@ -95,18 +96,34 @@
             <label for="fEmail" class="form-label">Email</label>
 			<input type="text" class="form-control" id="fEmail" name="email" value="@ViewData["FiltroEmail"]" maxlength="100" />
         </div>
-        <div class="col-12 col-md-3">
-            <label for="fTurmaPeriodo" class="form-label">Periodo</label>
-			<input type="text" class="form-control" id="fTurmaPeriodo" name="turmaPeriodo" value="@ViewData["FiltroTurmaPeriodo"]" maxlength="20" />
-        </div>
-        <div class="col-12 col-md-3">
-            <label for="fTurmaAno" class="form-label">Ano</label>
-			<input type="number" class="form-control" id="fTurmaAno" name="turmaAno" value="@ViewData["FiltroTurmaAno"]" />
-        </div>
-        <div class="col-12 col-md-3 d-flex gap-2 justify-content-end">
+		<div class="col-12 col-md-3">
+			<label for="fTurmaPeriodo" class="form-label">Período</label>
+			@{
+				var fp = ViewData["FiltroPeriodo"] as string;
+			}
+			<select class="form-select" id="fTurmaPeriodo" name="periodo">
+				@if (string.IsNullOrEmpty(fp)) { <option value="" selected>Todos</option> } else { <option value="">Todos</option> }
+				@if (fp == "M") { <option value="M" selected>Matutino</option> } else { <option value="M">Matutino</option> }
+				@if (fp == "V") { <option value="V" selected>Vespertino</option> } else { <option value="V">Vespertino</option> }
+				@if (fp == "N") { <option value="N" selected>Noturno</option> } else { <option value="N">Noturno</option> }
+			</select>
+		</div>
+		<div class="col-12 col-md-3">
+			<label for="fTurmaAno" class="form-label">Ano</label>
+			@{
+				var fa = ViewData["FiltroAno"]?.ToString();
+			}
+			<select class="form-select" id="fTurmaAno" name="ano">
+				@if (string.IsNullOrEmpty(fa)) { <option value="" selected>Todos</option> } else { <option value="">Todos</option> }
+				@for (int y = currentYear + 1; y >= 2015; y--) {
+					@if (fa == y.ToString()) { <option value="@y" selected>@y</option> } else { <option value="@y">@y</option> }
+				}
+			</select>
+		</div>
+		<div class="col-12 d-flex gap-2 justify-content-end">
 			<button type="submit" id="btnFiltrarAlunos" class="btn text-white btn-brand btn-no-focus">Filtrar</button>
-            <button type="button" id="btnLimparAlunos" class="btn btn-outline-secondary btn-no-focus">Limpar</button>
-        </div>
+			<button type="button" id="btnLimparAlunos" class="btn btn-outline-secondary btn-no-focus">Limpar</button>
+		</div>
     </div>
 </form>
 
@@ -158,7 +175,7 @@
 				document.getElementById('fNome').value='';
 				document.getElementById('fEmail').value='';
 				document.getElementById('fTurmaPeriodo').value='';
-				document.getElementById('fTurmaAno').value=0;
+				document.getElementById('fTurmaAno').value='';
                 document.forms[0].submit();
 			});
 		}

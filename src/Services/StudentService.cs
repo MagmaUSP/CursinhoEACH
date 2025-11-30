@@ -32,7 +32,7 @@ public class StudentService
                  AND (@Nome IS NULL OR p2.nome ILIKE @Nome)
                  AND (@Email IS NULL OR p2.email ILIKE @Email)
                  AND (@Ano IS NULL OR a2.turma_ano = @Ano)
-                 AND (@Periodo IS NULL OR a2.turma_periodo ILIKE @Periodo)) as TotalOportunidades,
+                 AND (@Periodo IS NULL OR a2.turma_periodo = @Periodo)) as TotalOportunidades,
 
                 (SELECT COUNT(*) FROM cursinho_each.aluno_evento ae
                  JOIN cursinho_each.aluno a3 ON ae.aluno_cpf = a3.cpf
@@ -42,7 +42,7 @@ public class StudentService
                  AND (@Nome IS NULL OR p3.nome ILIKE @Nome)
                  AND (@Email IS NULL OR p3.email ILIKE @Email)
                  AND (@Ano IS NULL OR a3.turma_ano = @Ano)
-                 AND (@Periodo IS NULL OR a3.turma_periodo ILIKE @Periodo)) as TotalPresencas
+                 AND (@Periodo IS NULL OR a3.turma_periodo = @Periodo)) as TotalPresencas
 
             FROM cursinho_each.aluno a
             JOIN cursinho_each.pessoa p ON a.cpf = p.cpf
@@ -113,11 +113,11 @@ public class StudentService
         sql.Append(" ORDER BY p.nome");
 
         var rawData = await _conn.QueryAsync<dynamic>(sql.ToString(), new { 
-            Cpf = $"%{cpf}%", 
+            Cpf = $"%{cpf}%".Replace(".", "").Replace("-", ""),
             Nome = $"%{nome}%", 
             Email = $"%{email}%",
             Ano = ano == 0 ? (int?)null : ano,
-            Periodo = string.IsNullOrEmpty(periodo) ? null : $"%{periodo}%"
+            Periodo = periodo
         });
 
         var list = new List<StudentSummaryDTO>();
