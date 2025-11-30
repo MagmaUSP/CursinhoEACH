@@ -1,6 +1,7 @@
 using Npgsql;
 using Microsoft.Extensions.Configuration;
 using CursinhoEACH.Data;
+using CursinhoEACH.Services;
 using Dapper;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,7 @@ builder.Services.AddScoped<EvasionService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<EvasionNotificationService>();
 builder.Services.AddScoped<StudentService>();
+builder.Services.AddScoped<AttendanceService>();
 
 builder.Services.AddHostedService<WeeklyJobService>();
 builder.Services.AddControllersWithViews();

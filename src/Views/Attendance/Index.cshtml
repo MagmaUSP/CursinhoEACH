@@ -1,0 +1,159 @@
+﻿@model IEnumerable<CursinhoEACH.DTO.AttendanceDTO>
+@{
+    ViewData["Title"] = "Presenças";
+}
+
+<div class="container mt-4">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <p class="text-muted">Página para gerenciar a frequência de alunos.</p>
+
+    <form method="get" class="row g-3 mb-4" autocomplete="off" id="attendanceForm">
+        <div class="col-12 col-md-3">
+            <label for="startDate" class="form-label">Data inicial</label>
+            <input type="date" id="startDate" name="startDate" class="form-control" value="@ViewBag.StartDate">
+            <div class="form-check mt-2">
+                <input class="form-check-input" type="checkbox" id="useToday">
+                <label class="form-check-label" for="useToday">
+                    Data de hoje
+                </label>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <label for="endDate" class="form-label">Data final</label>
+            <input type="date" id="endDate" name="endDate" class="form-control" value="@ViewBag.EndDate">
+            <div class="form-check mt-2">
+                <input class="form-check-input" type="checkbox" id="useInterval" @(ViewBag.UseInterval == true ? "checked" : "")>
+                <label class="form-check-label" for="useInterval">
+                    Usar intervalo de datas
+                </label>
+            </div>
+        </div>
+        <div class="col-12 col-md-2">
+            <label for="periodo" class="form-label">Período</label>
+            <select id="periodo" name="periodo" class="form-select">
+                <option value="">Todos</option>
+                <option value="Matutino" selected="@(ViewBag.Periodo == "Matutino" ? "selected" : null)">Matutino</option>
+                <option value="Vespertino" selected="@(ViewBag.Periodo == "Vespertino" ? "selected" : null)">Vespertino</option>
+                <option value="Noturno" selected="@(ViewBag.Periodo == "Noturno" ? "selected" : null)">Noturno</option>
+            </select>
+        </div>
+        <div class="col-12 col-md-2">
+            <label for="nome" class="form-label">Nome</label>
+            <input type="text" id="nome" name="nome" class="form-control" placeholder="Buscar aluno" value="@ViewBag.Nome">
+        </div>
+        <div class="col-12 col-md-2">
+            <label for="presenca" class="form-label">Presença</label>
+            <select id="presenca" name="presenca" class="form-select">
+                <option value="">Todos</option>
+                <option value="Presentes" selected="@(ViewBag.Presenca == "Presentes" ? "selected" : null)">Presentes</option>
+                <option value="Ausentes" selected="@(ViewBag.Presenca == "Ausentes" ? "selected" : null)">Ausentes</option>
+            </select>
+        </div>
+        <div class="col-12 d-flex justify-content-end gap-2">
+            <button type="submit" class="btn btn-brand text-white btn-no-focus">Filtrar</button>
+            <a href="@Url.Action("Index")" class="btn btn-outline-secondary btn-no-focus">Limpar</a>
+        </div>
+    </form>
+
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Nome</th>
+                <th>Turma (Ano)</th>
+                <th>Período</th>
+                <th>Evento</th>
+                <th>Data</th>
+                <th class="text-end">Ação</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var record in Model)
+                {
+                    <tr>
+                        <td>@record.Nome</td>
+                        <td>Turma @record.AnoTurma</td>
+                        <td>@record.Periodo</td>
+                        <td>@record.Evento</td>
+                        <td>@record.DataEvento.ToString("dd/MM/yyyy")</td>
+                        <td class="text-end">
+                            @if (!record.Presente)
+                            {
+                                <form method="post" asp-action="MarkAttendance" style="display:inline;">
+                                    <input type="hidden" name="cpf" value="@record.Cpf" />
+                                    <input type="hidden" name="eventoId" value="@record.EventoId" />
+                                    <button type="submit" class="btn btn-outline-primary btn-sm btn-no-focus">Marcar presença</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">Presente</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="6" class="text-center text-muted">Nenhum registro encontrado.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            const endDateInput = $('#endDate');
+            const useIntervalCheckbox = $('#useInterval');
+            const startDateInput = $('#startDate');
+            const useTodayCheckbox = $('#useToday');
+
+            function toggleEndDate() {
+                endDateInput.prop('disabled', !useIntervalCheckbox.is(':checked'));
+                if (!useIntervalCheckbox.is(':checked')) {
+                    endDateInput.val('');
+                }
+            }
+
+            function setTodayDate() {
+                if (useTodayCheckbox.is(':checked')) {
+                    const today = new Date().toISOString().split('T')[0];
+                    startDateInput.val(today);
+                    if (!useIntervalCheckbox.is(':checked')) {
+                        endDateInput.val(today);
+                    }
+                }
+            }
+
+            toggleEndDate();
+            
+            useTodayCheckbox.on('change', setTodayDate);
+            useIntervalCheckbox.on('change', toggleEndDate);
+
+            $('#attendanceForm').on('submit', function() {
+                if (!useIntervalCheckbox.is(':checked') && startDateInput.val()) {
+                    endDateInput.prop('disabled', false);
+                    endDateInput.val(startDateInput.val());
+                }
+            });
+        });
+    </script>
+}
