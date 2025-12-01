@@ -173,6 +173,7 @@ public class MockService
             FROM cursinho_each.aluno_evento ae
             LEFT JOIN cursinho_each.aluno_questao aq ON ae.aluno_cpf = aq.aluno_cpf
             JOIN cursinho_each.evento e ON ae.evento_id = e.id
+            JOIN cursinho_each.questao q ON e.prova_id = q.prova_id AND aq.questao_numero = q.numero
             WHERE ae.evento_id = @Id";
         // JOIN cursinho_each.questao q ON e.prova_id = q.prova_id AND aq.questao_numero = q.numero
         
