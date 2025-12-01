@@ -19,6 +19,7 @@ builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<EvasionNotificationService>();
 builder.Services.AddScoped<StudentService>();
 builder.Services.AddScoped<AttendanceService>();
+builder.Services.AddScoped<ScheduleService>();
 
 builder.Services.AddHostedService<WeeklyJobService>();
 builder.Services.AddControllersWithViews();

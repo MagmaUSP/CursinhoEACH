@@ -116,23 +116,54 @@
         </div>
     </div>
 
-    <div class="card mb-3 d-none" id="cardProfessor">
-        <div class="card-body">
-            <h6 class="mb-3">Dados de professor</h6>
-            <div class="row g-3">
-                <div class="col-12 col-md-6">
-                    <label for="TipoProfessor" class="form-label">Tipo de professor <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden"> (obrigatório)</span></label>
-                    <select class="form-select" id="TipoProfessor" name="TipoProfessor" disabled required>
-                        <option value="" selected disabled>Selecione...</option>
-                        <option value="Regular">Regular</option>
-                        <option value="Monitor">Monitor</option>
-                        <option value="Plantonista">Plantonista</option>
-                    </select>
-                    <div class="invalid-feedback">Selecione o tipo de professor.</div>
-                </div>
+<div class="card mb-3 d-none" id="cardProfessor">
+    <div class="card-body">
+        <h6 class="mb-3">Dados de professor</h6>
+        <div class="row g-3">
+            <div class="col-12 col-md-6">
+                <label for="TipoProfessor" class="form-label">Tipo de professor <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden"> (obrigatório)</span></label>
+                <select class="form-select" id="TipoProfessor" name="TipoProfessor" disabled required>
+                    <option value="" selected disabled>Selecione...</option>
+                    <option value="Regular">Regular</option>
+                    <option value="Monitor">Monitor</option>
+                    <option value="Plantonista">Plantonista</option>
+                </select>
+                <div class="invalid-feedback">Selecione o tipo de professor.</div>
+            </div>
+            <div class="col-12 col-md-6">
+                <label for="Materia" class="form-label">Matéria <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden"> (obrigatório)</span></label>
+                <select class="form-select" id="Materia" name="Materia" disabled required>
+                    <option value="" selected disabled>Selecione...</option>
+                    <option value="Álgebra">Álgebra</option>
+                    <option value="Geometria">Geometria</option>
+                    <option value="Biologia">Biologia</option>
+                    <option value="Física">Física</option>
+                    <option value="Química Inorgânica">Química Inorgânica</option>
+                    <option value="Química Orgânica">Química Orgânica</option>
+                    <option value="Geografia do Brasil">Geografia do Brasil</option>
+                    <option value="Geografia Geral">Geografia Geral</option>
+                    <option value="História do Brasil">História do Brasil</option>
+                    <option value="História Geral">História Geral</option>
+                    <option value="Português">Português</option>
+                    <option value="Redação">Redação</option>
+                    <option value="Literatura">Literatura</option>
+                    <option value="Inglês">Inglês</option>
+                </select>
+                <div class="invalid-feedback">Selecione a matéria.</div>
+            </div>
+            <div class="col-12 col-md-6">
+                <label for="Turno" class="form-label">Turno <span class="text-danger" aria-hidden="true">*</span><span class="visually-hidden"> (obrigatório)</span></label>
+                <select class="form-select" id="Turno" name="Turno" disabled required>
+                    <option value="" selected disabled>Selecione...</option>
+                    <option value="V">Vespertino</option>
+                    <option value="N">Noturno</option>
+                    <option value="Ambos">Ambos</option>
+                </select>
+                <div class="invalid-feedback">Selecione o turno.</div>
             </div>
         </div>
     </div>
+</div>
 
     <div class="d-flex justify-content-end gap-2">
         <a asp-action="Index" class="btn btn-outline-secondary btn-no-focus">Voltar</a>

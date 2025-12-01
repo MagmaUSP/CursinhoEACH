@@ -1,0 +1,543 @@
+@model CursinhoEACH.DTO.ScheduleViewModel
+@{
+    ViewData["Title"] = "Grade Horária";
+}
+
+<div class="container-fluid mt-4">
+    <h2>Grade Horária Semanal</h2>
+    <p class="text-muted">Arraste os professores para os horários desejados.</p>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Warning"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            @TempData["Warning"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- FILTROS -->
+    <form method="get" class="row g-3 mb-4" autocomplete="off" id="scheduleForm">
+        <div class="col-12 col-md-4">
+            <label for="weekDisplay" class="form-label">Semana (Segunda a Sexta)</label>
+            <input type="text" id="weekDisplay" class="form-control" readonly placeholder="Clique para selecionar a semana">
+            <input type="hidden" id="weekStart" name="weekStart" value="@Model.WeekStart?.ToString("yyyy-MM-dd")">
+            <div id="weekPicker" class="border rounded mt-2 p-3" style="display: none; background: white; position: absolute; z-index: 1000;">
+                <div id="calendar"></div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <label for="periodo" class="form-label">Período</label>
+            <select id="periodo" name="periodo" class="form-select" required>
+                <option value="">Selecione...</option>
+                <option value="V" selected="@(Model.Periodo == "V" ? "selected" : null)">Vespertino</option>
+                <option value="N" selected="@(Model.Periodo == "N" ? "selected" : null)">Noturno</option>
+            </select>
+        </div>
+        <div class="col-12 col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-brand text-white w-100">Carregar</button>
+        </div>
+    </form>
+
+    @if (Model.Professores != null && Model.Professores.Any())
+    {
+        <div class="row">
+            <!-- PROFESSORES DISPONÍVEIS -->
+            <div class="col-md-3">
+                <h5>Professores Disponíveis</h5>
+                <div id="professoresDisponiveis" class="border rounded p-3" style="min-height: 400px; background: #f8f9fa;">
+                    @foreach (var professor in Model.Professores)
+                    {
+                        <div class="card mb-2 professor-card" draggable="true" 
+                             data-professor-cpf="@professor.Cpf" 
+                             data-materia="@professor.Materia">
+                            <div class="card-body p-2">
+                                <strong>@professor.Nome</strong>
+                                <br><small class="text-muted">@professor.Materia</small>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- GRADE HORÁRIA -->
+            <div class="col-md-9">
+                <h5>Grade da Semana 
+                    @if (Model.WeekStart.HasValue)
+                    {
+                        var segunda = Model.WeekStart.Value;
+                        var sexta = segunda.AddDays(4);
+                        <small class="text-muted">(@segunda.ToString("dd/MM") a @sexta.ToString("dd/MM"))</small>
+                    }
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm" id="gradeHoraria">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 120px;">Horário</th>
+                                @if (Model.WeekStart.HasValue)
+                                {
+                                    for (int i = 0; i < 5; i++)
+                                    {
+                                        var dia = Model.WeekStart.Value.AddDays(i);
+                                        <th>
+                                            @dia.ToString("dddd", new System.Globalization.CultureInfo("pt-BR"))
+                                            <br><small>@dia.ToString("dd/MM")</small>
+                                        </th>
+                                    }
+                                }
+                                else
+                                {
+                                    <th>Segunda</th>
+                                    <th>Terça</th>
+                                    <th>Quarta</th>
+                                    <th>Quinta</th>
+                                    <th>Sexta</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody id="horarios-vespertino" style="@(Model.Periodo == "V" ? "" : "display: none;")">
+                            <tr><td class="fw-bold">14:00 - 14:45</td>@for (int i = 0; i < 5; i++){<td class="slot" data-dia="@i" data-horario="14:00"></td>}</tr>
+                            <tr><td class="fw-bold">14:45 - 15:30</td>@for (int i = 0; i < 5; i++){<td class="slot" data-dia="@i" data-horario="14:45"></td>}</tr>
+                            <tr><td class="fw-bold">15:30 - 16:15</td>@for (int i = 0; i < 5; i++){<td class="slot" data-dia="@i" data-horario="15:30"></td>}</tr>
+                            <tr class="table-secondary"><td colspan="6" class="text-center"><em>Intervalo 16:15 - 16:30</em></td></tr>
+                            <tr><td class="fw-bold">16:30 - 17:15</td>@for (int i = 0; i < 5; i++){<td class="slot" data-dia="@i" data-horario="16:30"></td>}</tr>
+                            <tr><td class="fw-bold">17:15 - 18:00</td>@for (int i = 0; i < 5; i++){<td class="slot" data-dia="@i" data-horario="17:15"></td>}</tr>
+                            <tr><td class="fw-bold">18:00 - 18:45</td>@for (int i = 0; i < 5; i++){<td class="slot" data-dia="@i" data-horario="18:00"></td>}</tr>
+                        </tbody>
+                        <tbody id="horarios-noturno" style="@(Model.Periodo == "N" ? "" : "display: none;")">
+                            <tr><td class="fw-bold">19:00 - 19:45</td>@for (int i = 0; i < 5; i++){<td class="slot" data-dia="@i" data-horario="19:00"></td>}</tr>
+                            <tr><td class="fw-bold">19:45 - 20:30</td>@for (int i = 0; i < 5; i++){<td class="slot" data-dia="@i" data-horario="19:45"></td>}</tr>
+                            <tr class="table-secondary"><td colspan="6" class="text-center"><em>Intervalo 20:30 - 20:40</em></td></tr>
+                            <tr><td class="fw-bold">20:40 - 21:25</td>@for (int i = 0; i < 5; i++){<td class="slot" data-dia="@i" data-horario="20:40"></td>}</tr>
+                            <tr><td class="fw-bold">21:25 - 22:05</td>@for (int i = 0; i < 5; i++){<td class="slot" data-dia="@i" data-horario="21:25"></td>}</tr>
+                            <tr><td class="fw-bold">22:05 - 22:45</td>@for (int i = 0; i < 5; i++){<td class="slot" data-dia="@i" data-horario="22:05"></td>}</tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12 text-end">
+                <button type="button" id="btnSalvar" class="btn btn-success btn-lg">Salvar Grade Horária</button>
+            </div>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(Model.Periodo))
+    {
+        <div class="alert alert-info">Selecione uma semana e período para carregar os professores disponíveis.</div>
+    }
+</div>
+
+<style>
+    .slot { height: 60px; background: white; border: 2px dashed #dee2e6; vertical-align: top; padding: 5px; }
+    .slot.drag-over { background: #e7f3ff; border-color: #0d6efd; }
+    .professor-card { cursor: move; user-select: none; }
+    .professor-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+    .slot .card { cursor: grab; margin: 0; }
+    
+    #professoresDisponiveis.drag-over { background: #fff3cd; border: 2px dashed #ffc107; }
+    
+    #calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+    .cal-day { padding: 10px; text-align: center; border: 1px solid #ddd; cursor: pointer; border-radius: 4px; }
+    .cal-day.weekend { background: #f8f9fa; color: #adb5bd; cursor: not-allowed; }
+    .cal-day.holiday { background: #ffe5e5; color: #adb5bd; cursor: not-allowed; }
+    .cal-day.selected { background: #fd7e14; color: white; font-weight: bold; }
+    .cal-day.disabled { background: #f8f9fa; color: #dee2e6; cursor: not-allowed; }
+    .cal-header { font-weight: bold; padding: 5px; text-align: center; }
+</style>
+
+@section Scripts {
+    <script>
+    $(document).ready(function() {
+        const feriados2025 = ['2025-01-01', '2025-02-24', '2025-02-25', '2025-04-18', '2025-04-21', '2025-05-01', '2025-06-19', '2025-09-07', '2025-10-12', '2025-11-02', '2025-11-15', '2025-11-20', '2025-12-25'];
+        
+        let currentMonth = new Date();
+        let selectedMonday = null;
+
+    function isWeekend(date) {
+        const day = date.getDay();
+        return day === 0 || day === 6;
+    }
+
+    function isHoliday(date) {
+        const dateStr = date.toISOString().split('T')[0];
+        return feriados2025.includes(dateStr);
+    }
+
+    function getMonday(date) {
+        const d = new Date(date);
+        d.setHours(0, 0, 0, 0);
+        const day = d.getDay();
+        
+        if (day === 1) {
+            return d;
+        }
+        
+        if (day === 0) {
+            d.setDate(d.getDate() + 1);
+            return d;
+        }
+        
+        const diff = 1 - day;
+        d.setDate(d.getDate() + diff);
+        return d;
+    }
+
+    function renderCalendar() {
+        const year = currentMonth.getFullYear();
+        const month = currentMonth.getMonth();
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        
+        let html = '<div class="d-flex justify-content-between mb-2">';
+        html += '<button type="button" class="btn btn-sm btn-outline-secondary" id="prevMonth">&lt;</button>';
+        html += '<strong>' + currentMonth.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) + '</strong>';
+        html += '<button type="button" class="btn btn-sm btn-outline-secondary" id="nextMonth">&gt;</button>';
+        html += '</div>';
+        
+        html += '<div id="calendar">';
+        ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].forEach(d => {
+            html += '<div class="cal-header">' + d + '</div>';
+        });
+        
+        const startPadding = firstDay.getDay();
+        for (let i = 0; i < startPadding; i++) {
+            html += '<div class="cal-day disabled"></div>';
+        }
+        
+        for (let day = 1; day <= lastDay.getDate(); day++) {
+            const date = new Date(year, month, day);
+            date.setHours(0, 0, 0, 0);
+            
+            let classes = 'cal-day';
+            
+            if (isWeekend(date)) {
+                classes += ' weekend';
+            } else if (isHoliday(date)) {
+                classes += ' holiday';
+            } else if (selectedMonday) {
+                const monday = getMonday(date);
+                monday.setHours(0, 0, 0, 0);
+                const selectedMondayNorm = new Date(selectedMonday);
+                selectedMondayNorm.setHours(0, 0, 0, 0);
+                
+                if (monday.getTime() === selectedMondayNorm.getTime()) {
+                    classes += ' selected';
+                }
+            }
+            
+            html += '<div class="' + classes + '" data-date="' + date.toISOString().split('T')[0] + '">' + day + '</div>';
+        }
+        
+        html += '</div>';
+        
+        html += '<div class="d-flex justify-content-end gap-2 mt-3">';
+        html += '<button type="button" class="btn btn-sm btn-secondary" id="cancelWeek">Cancelar</button>';
+        html += '<button type="button" class="btn btn-sm btn-primary" id="confirmWeek"' + (selectedMonday ? '' : ' disabled') + '>Confirmar</button>';
+        html += '</div>';
+        
+        $('#weekPicker').html(html);
+    }
+
+    $('#weekDisplay').on('click', function(e) {
+        e.stopPropagation();
+        $('#weekPicker').toggle();
+        if ($('#weekPicker').is(':visible')) renderCalendar();
+    });
+
+    $(document).on('click', '#weekPicker', function(e) {
+        e.stopPropagation();
+    });
+
+    $(document).on('click', '#prevMonth', function(e) {
+        e.stopPropagation();
+        currentMonth.setMonth(currentMonth.getMonth() - 1);
+        renderCalendar();
+    });
+
+    $(document).on('click', '#nextMonth', function(e) {
+        e.stopPropagation();
+        currentMonth.setMonth(currentMonth.getMonth() + 1);
+        renderCalendar();
+    });
+
+    $(document).on('click', '.cal-day:not(.weekend):not(.holiday):not(.disabled)', function(e) {
+        e.stopPropagation();
+        const clickedDate = new Date($(this).data('date') + 'T00:00:00');
+        selectedMonday = getMonday(clickedDate);
+        renderCalendar();
+    });
+
+    $(document).on('click', '#confirmWeek', function(e) {
+        e.stopPropagation();
+        if (selectedMonday) {
+            const friday = new Date(selectedMonday);
+            friday.setDate(selectedMonday.getDate() + 4);
+            
+            $('#weekStart').val(selectedMonday.toISOString().split('T')[0]);
+            $('#weekDisplay').val(
+                selectedMonday.toLocaleDateString('pt-BR') + ' a ' + friday.toLocaleDateString('pt-BR')
+            );
+            $('#weekPicker').hide();
+        }
+    });
+
+    $(document).on('click', '#cancelWeek', function(e) {
+        e.stopPropagation();
+        $('#weekPicker').hide();
+    });
+
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('#weekDisplay, #weekPicker').length) {
+            $('#weekPicker').hide();
+        }
+    });
+
+    
+        @if (Model.GradeExistente != null && Model.GradeExistente.Any())
+        {
+            @:console.log('>>> ENTRANDO NO BLOCO DE RENDERIZAÇÃO <<<');
+            @:const gradeExistente = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.GradeExistente));
+            @:console.log('Grade existente JSON:', gradeExistente);
+            @:console.log('Total de aulas:', gradeExistente.length);
+            @:
+            @:const professoresMap = new Map();
+            @:
+            foreach (var prof in Model.Professores)
+            {
+                var cleanMateria = System.Net.WebUtility.HtmlDecode(prof.Materia);
+                @:professoresMap.set('@Html.Raw(prof.Cpf)|@Html.Raw(cleanMateria)', { cpf: '@Html.Raw(prof.Cpf)', nome: '@Html.Raw(prof.Nome)', materia: '@Html.Raw(cleanMateria)' });
+            }
+            @:
+            @:console.log('Total professores no mapa:', professoresMap.size);
+            @:console.log('Chaves disponíveis:', Array.from(professoresMap.keys()));
+            @:
+            @:gradeExistente.forEach((aula, index) => {
+            @:    console.log(`\n=== Aula ${index + 1} ===`);
+            @:    console.log('DataEvento recebido:', aula.DataEvento);
+            @:    console.log('HorarioInicio recebido:', aula.HorarioInicio);
+            @:    console.log('ProfessorCpf:', aula.ProfessorCpf);
+            @:    console.log('Materia:', aula.Materia);
+            @:    
+            @:    const key = aula.ProfessorCpf + '|' + aula.Materia;
+            @:    console.log('Chave procurada:', key);
+            @:    
+            @:    const professor = professoresMap.get(key);
+            @:    console.log('Professor encontrado:', professor);
+            @:    
+            @:    if (professor) {
+            @:        const dateParts = aula.DataEvento.split('T')[0].split('-');
+            @:        const dataEvento = new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]));
+            @:        
+            @:        const weekStartStr = '@Model.WeekStart?.ToString("yyyy-MM-dd")';
+            @:        const weekParts = weekStartStr.split('-');
+            @:        const weekStartDate = new Date(parseInt(weekParts[0]), parseInt(weekParts[1]) - 1, parseInt(weekParts[2]));
+            @:        
+            @:        const diaOffset = Math.floor((dataEvento - weekStartDate) / (1000 * 60 * 60 * 24));
+            @:        
+            @:        let horario = aula.HorarioInicio || '14:00';
+            @:        if (horario.length > 5) {
+            @:            horario = horario.substring(0, 5);
+            @:        }
+            @:        
+            @:        console.log('Data evento (local):', dataEvento.toLocaleDateString('pt-BR'));
+            @:        console.log('Week start (local):', weekStartDate.toLocaleDateString('pt-BR'));
+            @:        console.log('Dia offset calculado:', diaOffset);
+            @:        console.log('Horário formatado:', horario);
+            @:        
+            @:        const selector = `.slot[data-dia="${diaOffset}"][data-horario="${horario}"]`;
+            @:        console.log('Seletor completo:', selector);
+            @:        
+            @:        const slot = $(selector);
+            @:        console.log('Slots encontrados com esse seletor:', slot.length);
+            @:        
+            @:        if (slot.length > 0) {
+            @:            const card = `
+            @:                <div class="card mb-0 professor-card" draggable="true" 
+            @:                     data-professor-cpf="${professor.cpf}" 
+            @:                     data-materia="${professor.materia}">
+            @:                    <div class="card-body p-2">
+            @:                        <strong>${professor.nome}</strong>
+            @:                        <br><small class="text-muted">${professor.materia}</small>
+            @:                    </div>
+            @:                </div>`;
+            @:            slot.html(card);
+            @:            console.log('✓ Card adicionado com sucesso!');
+            @:        } else {
+            @:            console.error('✗ Slot NÃO encontrado!');
+            @:        }
+            @:    } else {
+            @:        console.error('✗ Professor NÃO encontrado para chave:', key);
+            @:    }
+            @:});
+        }
+        else
+        {
+            @:console.log('⚠ Nenhuma grade existente para carregar (lista vazia ou null)');
+        }
+
+    // Drag and drop
+    let draggedElement = null;
+    let draggedFromSlot = null;
+
+    $(document).on('dragstart', '.professor-card', function(e) {
+        draggedElement = $(this);
+        draggedFromSlot = $(this).closest('.slot');
+        
+        if (draggedFromSlot.length === 0) {
+            draggedFromSlot = null;
+        }
+        
+        $(this).css('opacity', '0.5');
+        e.originalEvent.dataTransfer.effectAllowed = 'move';
+    });
+
+    $(document).on('dragend', '.professor-card', function(e) {
+        $(this).css('opacity', '1');
+    });
+
+    $('.slot').on('dragover', function(e) {
+        e.preventDefault();
+        $(this).addClass('drag-over');
+        e.originalEvent.dataTransfer.dropEffect = 'move';
+    });
+
+    $('.slot').on('dragleave', function() {
+        $(this).removeClass('drag-over');
+    });
+
+    $('.slot').on('drop', function(e) {
+        e.preventDefault();
+        $(this).removeClass('drag-over');
+        
+        if (draggedElement) {
+            if (draggedFromSlot && draggedFromSlot.length > 0) {
+                draggedFromSlot.empty();
+            }
+            
+            const cardToAdd = draggedFromSlot ? draggedElement : draggedElement.clone();
+            
+            $(this).empty().append(cardToAdd);
+            cardToAdd.attr('draggable', 'true').css('opacity', '1');
+            
+            draggedElement = null;
+            draggedFromSlot = null;
+        }
+    });
+
+    $('#professoresDisponiveis').on('dragover', function(e) {
+        if (draggedFromSlot && draggedFromSlot.length > 0) {
+            e.preventDefault();
+            $(this).addClass('drag-over');
+            e.originalEvent.dataTransfer.dropEffect = 'move';
+        }
+    });
+
+    $('#professoresDisponiveis').on('dragleave', function() {
+        $(this).removeClass('drag-over');
+    });
+
+    $('#professoresDisponiveis').on('drop', function(e) {
+        if (draggedFromSlot && draggedFromSlot.length > 0) {
+            e.preventDefault();
+            $(this).removeClass('drag-over');
+            
+            draggedFromSlot.empty();
+            
+            draggedElement = null;
+            draggedFromSlot = null;
+        }
+    });
+
+    // Salvar - COM DEBUG
+    $('#btnSalvar').on('click', function() {
+        const aulas = [];
+        const weekStartStr = $('#weekStart').val();
+        if (!weekStartStr) {
+            alert('Selecione uma semana primeiro!');
+            return;
+        }
+        
+        const weekStart = new Date(weekStartStr + 'T00:00:00');
+        
+        $('.slot .card').each(function() {
+            const slot = $(this).closest('.slot');
+            const diaOffset = parseInt(slot.data('dia'));
+            const horario = slot.data('horario');
+            const dataEvento = new Date(weekStart);
+            dataEvento.setDate(weekStart.getDate() + diaOffset);
+            
+            // Adicionar horário à data
+            const [hora, minuto] = horario.split(':');
+            dataEvento.setHours(parseInt(hora), parseInt(minuto), 0, 0);
+            
+            const aulaData = {
+                professorCpf: $(this).data('professor-cpf'),
+                materia: $(this).data('materia'),
+                diaSemana: diaOffset + 1,
+                horarioInicio: horario,
+                dataEvento: dataEvento.toISOString() // Envia com data E hora
+            };
+            
+            console.log('Aula a enviar:', aulaData);
+            aulas.push(aulaData);
+        });
+        
+        if (aulas.length === 0) {
+            alert('Adicione pelo menos uma aula na grade!');
+            return;
+        }
+
+        console.log('Total aulas a salvar:', aulas.length);
+        console.log('Dados completos:', JSON.stringify({
+            periodo: $('#periodo').val(),
+            weekStart: weekStartStr,
+            aulas: aulas
+        }, null, 2));
+
+        $.ajax({
+            url: '@Url.Action("SaveSchedule", "Schedule")',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                periodo: $('#periodo').val(),
+                weekStart: weekStartStr,
+                aulas: aulas
+            }),
+            success: function(response) {
+                alert(response.message || 'Grade horária salva com sucesso!');
+                location.reload();
+            },
+            error: function(xhr) {
+                const errorMsg = xhr.responseJSON?.message || 'Erro ao salvar grade horária.';
+                alert(errorMsg);
+            }
+        });
+    });
+
+    @if (Model.WeekStart.HasValue)
+    {
+        var segunda = Model.WeekStart.Value;
+        var sexta = segunda.AddDays(4);
+        @:selectedMonday = new Date('@segunda.ToString("yyyy-MM-dd")');
+        @:$('#weekDisplay').val('@segunda.ToString("dd/MM/yyyy") a @sexta.ToString("dd/MM/yyyy")');
+    }
+
+    });
+    </script>
+}

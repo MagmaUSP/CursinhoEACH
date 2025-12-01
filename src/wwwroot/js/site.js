@@ -158,6 +158,8 @@
 			var motivoWrap = document.getElementById('wrapMotivoDesligamento');
 			var motivo = form.querySelector('#MotivoDesligamento');
 			var tipoProfessor = form.querySelector('#TipoProfessor');
+			var materia = form.querySelector('#Materia');
+			var turno = form.querySelector('#Turno');
 			var repCPF = form.querySelector('#RepresentanteLegalCPF');
 			var turma = form.querySelector('#Turma');
 			function toggleMotivo() {
@@ -188,10 +190,11 @@
 					if (!el) return;
 					if (isAluno) { el.required = true; el.disabled = false; } else { el.required = false; el.disabled = true; el.value = ''; }
 				});
-				if (tipoProfessor) {
-					if (isProfessor) { tipoProfessor.disabled = false; tipoProfessor.required = true; }
-					else { tipoProfessor.disabled = true; tipoProfessor.required = false; tipoProfessor.value = ''; }
-				}
+				[tipoProfessor, materia, turno].forEach(function (el) {
+					if (!el) return;
+					if (isProfessor) { el.disabled = false; el.required = true; }
+					else { el.disabled = true; el.required = false; el.value = ''; }
+				});
 			}
 			if (papel) {
 				papel.addEventListener('change', function () { updateCards(); toggleMotivo(); });
@@ -213,6 +216,8 @@
 			var wrapMotivo = document.getElementById('wrapMotivoDesligamento');
 			var motivo = document.getElementById('MotivoDesligamento');
 			var tipoProfessor = document.getElementById('TipoProfessor');
+			var materia = document.getElementById('Materia');
+			var turno = document.getElementById('Turno');
 			var repCPF = document.getElementById('RepresentanteLegalCPF');
 			var anoEscolar = document.getElementById('AnoEscolar');
 			var isAluno = papel && papel.value === 'Aluno';
@@ -251,7 +256,11 @@
 							el.disabled = false;
 						});
 						if (matriculado) matriculado.disabled = false;
-						if (tipoProfessor) { tipoProfessor.required = false; tipoProfessor.disabled = true; }
+						[tipoProfessor, materia, turno].forEach(function (el) {
+							if (!el) return;
+							el.required = false;
+							el.disabled = true;
+						});
 						if (matriculado && wrapMotivo && motivo) {
 							var mostrar = !matriculado.checked;
 							wrapMotivo.classList.toggle('d-none', !mostrar);
@@ -266,7 +275,11 @@
 							}
 						}
 					} else if (isProfessor) {
-						if (tipoProfessor) { tipoProfessor.required = true; tipoProfessor.disabled = false; }
+						[tipoProfessor, materia, turno].forEach(function (el) {
+							if (!el) return;
+							el.required = true;
+							el.disabled = false;
+						});
 						[repCPF, document.getElementById('Turma'), matriculado, anoEscolar].forEach(function (el) {
 							if (!el) return;
 							el.disabled = true;
@@ -279,7 +292,7 @@
 						}
 					}
 				} else {
-					[repCPF, document.getElementById('Turma'), tipoProfessor, matriculado, anoEscolar, motivo].forEach(function (el) {
+					[repCPF, document.getElementById('Turma'), tipoProfessor, materia, turno, matriculado, anoEscolar, motivo].forEach(function (el) {
 						if (!el) return;
 						el.disabled = true;
 						el.required = false;

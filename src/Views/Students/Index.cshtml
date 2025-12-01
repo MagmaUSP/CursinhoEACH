@@ -115,7 +115,7 @@
 			}
 			<select class="form-select" id="fTurmaAno" name="ano">
 				@if (string.IsNullOrEmpty(fa)) { <option value="" selected>Todos</option> } else { <option value="">Todos</option> }
-				@for (int y = currentYear + 1; y >= 2015; y--) {
+				@for (int y = currentYear + 1; y >= 2024; y--) {
 					@if (fa == y.ToString()) { <option value="@y" selected>@y</option> } else { <option value="@y">@y</option> }
 				}
 			</select>
