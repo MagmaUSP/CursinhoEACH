@@ -10,5 +10,7 @@ namespace CursinhoEACH.DTO
         public bool Presente { get; set; }
         public long EventoId { get; set; }
         public string Cpf { get; set; } = string.Empty;
+        public string Descricao { get; set; } = string.Empty;
+
     }
 }

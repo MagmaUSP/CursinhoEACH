@@ -38,6 +38,11 @@ namespace CursinhoEACH.Services
                         WHEN 'A' THEN 'Aula'
                         ELSE 'Outro'
                     END AS Evento,
+                    CASE e.tipo
+                        WHEN 'S' THEN pr.nome
+                        WHEN 'A' THEN em.materia_nome
+                        ELSE NULL
+                    END AS Descricao,
                     e.data AS DataEvento,
                     COALESCE(ae.presente, false) AS Presente,
                     e.id AS EventoId,
@@ -48,6 +53,8 @@ namespace CursinhoEACH.Services
                 INNER JOIN evento_turma et ON t.ano = et.turma_ano AND t.periodo = et.turma_periodo
                 INNER JOIN evento e ON et.evento_id = e.id
                 LEFT JOIN aluno_evento ae ON a.cpf = ae.aluno_cpf AND e.id = ae.evento_id
+                LEFT JOIN evento_materia em ON e.id = em.evento_id
+                LEFT JOIN prova pr ON e.prova_id = pr.id
                 WHERE a.matriculado = true
                 AND e.data <= CURRENT_DATE";
 

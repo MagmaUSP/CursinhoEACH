@@ -76,6 +76,7 @@
                 <th>Turma (Ano)</th>
                 <th>Período</th>
                 <th>Evento</th>
+                <th>Descrição</th>
                 <th>Data</th>
                 <th class="text-end">Ação</th>
             </tr>
@@ -90,6 +91,7 @@
                         <td>Turma @record.AnoTurma</td>
                         <td>@record.Periodo</td>
                         <td>@record.Evento</td>
+                        <td>@record.Descricao</td>
                         <td>@record.DataEvento.ToString("dd/MM/yyyy")</td>
                         <td class="text-end">
                             @if (!record.Presente)
